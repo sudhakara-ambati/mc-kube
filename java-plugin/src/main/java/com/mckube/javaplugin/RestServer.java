@@ -1,44 +1,40 @@
 package com.mckube.javaplugin;
 
+import com.mckube.javaplugin.controllers.HealthController;
+import com.mckube.javaplugin.controllers.QueueController;
+import com.mckube.javaplugin.controllers.ServerController;
+import com.mckube.javaplugin.controllers.TransferController;
+import com.mckube.javaplugin.services.QueueListService;
+import com.mckube.javaplugin.services.ServerListService;
 import com.mckube.javaplugin.services.TransferService;
 import io.javalin.Javalin;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.slf4j.Logger;
 
 public class RestServer {
 
-    private final TransferService transferService;
+    private final TransferController transferController;
+    private final ServerController serverController;
+    private final QueueController queueController;
+    private final HealthController healthController;
     private final Logger logger;
     private Javalin app;
 
-    public RestServer(TransferService transferService, Logger logger) {
-        this.transferService = transferService;
+    public RestServer(TransferService transferService, QueueListService queueListService,
+                      ServerListService serverListService, Logger logger) {
         this.logger = logger;
+        this.transferController = new TransferController(transferService, logger);
+        this.serverController = new ServerController(serverListService, logger);
+        this.queueController = new QueueController(queueListService, logger);
+        this.healthController = new HealthController();
     }
 
     public void start(int port) {
-        app = Javalin.create().start(port);
+        app = Javalin.create(config -> config.http.defaultContentType = "application/json").start(port);
 
-        app.post("/transfer", ctx -> {
-            try {
-                JsonObject body = JsonParser.parseString(ctx.body()).getAsJsonObject();
-                String playerName = body.get("player").getAsString();
-                String serverName = body.get("server").getAsString();
-
-                boolean success = transferService.transferPlayer(playerName, serverName);
-
-                if (success) {
-                    ctx.status(200).result("Transferred " + playerName + " to " + serverName);
-                } else {
-                    ctx.status(400).result("Player or server not found");
-                }
-
-            } catch (Exception e) {
-                logger.error("Error handling transfer request", e);
-                ctx.status(500).result("Internal error");
-            }
-        });
+        transferController.registerRoutes(app);
+        serverController.registerRoutes(app);
+        queueController.registerRoutes(app);
+        healthController.registerRoutes(app);
 
         logger.info("REST API started on port {}", port);
     }
@@ -46,6 +42,7 @@ public class RestServer {
     public void stop() {
         if (app != null) {
             app.stop();
+            logger.info("REST API stopped");
         }
     }
 }
