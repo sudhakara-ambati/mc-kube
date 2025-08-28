@@ -1,6 +1,7 @@
 package com.mckube.javaplugin.controllers;
 
 import com.mckube.javaplugin.services.MetricsService;
+import com.mckube.javaplugin.services.MetricsData;
 import com.mckube.javaplugin.utils.ControllerUtils;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -43,7 +44,7 @@ public class MetricsController {
                 Map<String, Object> response = Map.ofEntries(
                         new AbstractMap.SimpleEntry<>("success", true),
                         new AbstractMap.SimpleEntry<>("server_ip", data.serverIp()),
-                        new AbstractMap.SimpleEntry<>("timestamp", DateTimeFormatter.ISO_INSTANT.format(data.timestamp())),
+                        new AbstractMap.SimpleEntry<>("timestamp", (data.timestamp())),
                         new AbstractMap.SimpleEntry<>("cpu_percent", round(data.cpuPercent())),
                         new AbstractMap.SimpleEntry<>("memory_used_gb", round(data.memoryUsedGB())),
                         new AbstractMap.SimpleEntry<>("memory_max_gb", round(data.memoryMaxGB())),
@@ -81,7 +82,7 @@ public class MetricsController {
                     return null;
                 }
 
-                var body = ctx.bodyAsClass(MetricsService.MetricsData.class);
+                var body = ctx.bodyAsClass(MetricsData.class);
                 if (body == null) {
                     ctx.status(400).json(ControllerUtils.createErrorResponse("Invalid or missing request body"));
                     return null;

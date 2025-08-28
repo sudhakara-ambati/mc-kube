@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import com.mckube.javaplugin.services.MetricsData;
 
 public class MetricsService {
 
@@ -82,7 +83,7 @@ public class MetricsService {
                 if (logsService != null) {
                     Map<String, Object> metadata = new HashMap<>();
                     metadata.put("server_ip", serverIp);
-                    metadata.put("data_age_seconds", Instant.now().getEpochSecond() - data.timestamp().getEpochSecond());
+                    //metadata.put("data_age_seconds", Instant.now().getEpochSecond() - data.timestamp());
                     metadata.put("cpu_percent", data.cpuPercent());
                     metadata.put("memory_percent", data.memoryPercent());
                     metadata.put("tps", data.tps());
@@ -176,18 +177,4 @@ public class MetricsService {
             }
         }
     }
-
-    public static record MetricsData(
-            String serverIp,
-            String timestamp,
-            double cpuPercent,
-            double memoryUsedGB,
-            double memoryMaxGB,
-            double memoryPercent,
-            double systemMemoryUsedGB,
-            double systemMemoryTotalGB,
-            double systemMemoryPercent,
-            double tps,
-            double tpsPercent
-    ) {}
 }
