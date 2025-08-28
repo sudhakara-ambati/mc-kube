@@ -7,7 +7,9 @@ import com.velocitypowered.api.proxy.server.ServerPing;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -15,14 +17,29 @@ public class ServerListService {
 
     private final ProxyServer server;
     private final Logger logger;
+    private LogsService logsService;
 
     public ServerListService(ProxyServer server, Logger logger) {
         this.server = server;
         this.logger = logger;
     }
 
+    public void setLogsService(LogsService logsService) {
+        this.logsService = logsService;
+    }
+
     public CompletableFuture<List<ServerStatus>> getAllServersWithStatus() {
         List<CompletableFuture<ServerStatus>> futures = new ArrayList<>();
+
+        // Log server status check initiation
+        if (logsService != null) {
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("total_servers", server.getAllServers().size());
+            metadata.put("check_time", java.time.Instant.now().toString());
+            metadata.put("server_names", server.getAllServers().stream()
+                    .map(s -> s.getServerInfo().getName()).toList());
+            logsService.logServerStatusCheck("Server status check initiated for all servers", metadata);
+        }
 
         for (RegisteredServer registeredServer : server.getAllServers()) {
             CompletableFuture<ServerStatus> serverStatusFuture =
@@ -31,12 +48,34 @@ public class ServerListService {
         }
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> futures.stream()
-                        .map(CompletableFuture::join)
-                        .toList());
+                .thenApply(v -> {
+                    List<ServerStatus> results = futures.stream()
+                            .map(CompletableFuture::join)
+                            .toList();
+
+                    // Log server status check completion
+                    if (logsService != null) {
+                        long onlineServers = results.stream().filter(s -> "online".equals(s.getStatus())).count();
+                        long offlineServers = results.size() - onlineServers;
+
+                        Map<String, Object> metadata = new HashMap<>();
+                        metadata.put("total_servers", results.size());
+                        metadata.put("online_servers", onlineServers);
+                        metadata.put("offline_servers", offlineServers);
+                        metadata.put("check_completed_time", java.time.Instant.now().toString());
+                        metadata.put("online_server_names", results.stream()
+                                .filter(s -> "online".equals(s.getStatus()))
+                                .map(ServerStatus::getName).toList());
+                        metadata.put("offline_server_names", results.stream()
+                                .filter(s -> "offline".equals(s.getStatus()))
+                                .map(ServerStatus::getName).toList());
+                        logsService.logServerStatusCheck("Server status check completed", metadata);
+                    }
+
+                    return results;
+                });
     }
 
-    // Get basic server info (no ping) - faster for status checks
     public CompletableFuture<List<BasicServerInfo>> getBasicServerInfo() {
         List<BasicServerInfo> basicInfo = new ArrayList<>();
 
@@ -56,11 +95,17 @@ public class ServerListService {
         return CompletableFuture.completedFuture(basicInfo);
     }
 
-    // Get specific server by name
     public CompletableFuture<Optional<ServerStatus>> getServerByName(String serverName) {
         Optional<RegisteredServer> registeredServer = server.getServer(serverName);
 
         if (registeredServer.isEmpty()) {
+            if (logsService != null) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("requested_server", serverName);
+                metadata.put("available_servers", server.getAllServers().stream()
+                        .map(s -> s.getServerInfo().getName()).toList());
+                logsService.logServerStatusCheck("Server status check failed - server not found", metadata);
+            }
             return CompletableFuture.completedFuture(Optional.empty());
         }
 
@@ -68,7 +113,6 @@ public class ServerListService {
                 .thenApply(Optional::of);
     }
 
-    // Get only online servers - more efficient for player counts
     public CompletableFuture<List<ServerStatus>> getOnlineServersOnly() {
         return getAllServersWithStatus()
                 .thenApply(servers -> servers.stream()
@@ -96,7 +140,7 @@ public class ServerListService {
                             .map(ServerPing.Players::getMax)
                             .orElse(-1);
 
-                    return new ServerStatus(
+                    ServerStatus status = new ServerStatus(
                             serverInfo.getName(),
                             serverInfo.getAddress().getHostString(),
                             serverInfo.getAddress().getPort(),
@@ -107,10 +151,47 @@ public class ServerListService {
                             version,
                             motd
                     );
+
+                    // Log if server has high latency
+                    if (logsService != null && latency > 1000) {
+                        Map<String, Object> metadata = new HashMap<>();
+                        metadata.put("latency_ms", latency);
+                        metadata.put("threshold_ms", 1000);
+                        metadata.put("server_address", serverInfo.getAddress().toString());
+                        metadata.put("current_players", currentPlayers);
+                        logsService.logServerHighLatency("High latency detected for server",
+                                serverInfo.getName(),
+                                metadata);
+                    }
+
+                    // Log server came online
+                    if (logsService != null) {
+                        Map<String, Object> metadata = new HashMap<>();
+                        metadata.put("latency_ms", latency);
+                        metadata.put("current_players", currentPlayers);
+                        metadata.put("max_players", maxPlayers);
+                        metadata.put("version", version);
+                        logsService.logServerOnline("Server is online and responding",
+                                serverInfo.getName(),
+                                metadata);
+                    }
+
+                    return status;
                 })
                 .exceptionally(throwable -> {
                     logger.debug("Server {} is offline or unreachable: {}",
                             serverInfo.getName(), throwable.getMessage());
+
+                    // Log server offline
+                    if (logsService != null) {
+                        Map<String, Object> metadata = new HashMap<>();
+                        metadata.put("error_message", throwable.getMessage());
+                        metadata.put("server_address", serverInfo.getAddress().toString());
+                        metadata.put("check_time", java.time.Instant.now().toString());
+                        logsService.logServerOffline("Server went offline or became unreachable",
+                                serverInfo.getName(),
+                                metadata);
+                    }
 
                     return new ServerStatus(
                             serverInfo.getName(),
@@ -126,7 +207,7 @@ public class ServerListService {
                 });
     }
 
-    // Basic server info class for lightweight responses
+    // Keep your existing BasicServerInfo and ServerStatus classes unchanged
     public static class BasicServerInfo {
         private final String name;
         private final String host;
@@ -176,7 +257,7 @@ public class ServerListService {
             this.timestamp = java.time.Instant.now().toString();
         }
 
-        // Getters
+        // All your existing getters and methods remain the same
         public String getName() { return name; }
         public String getHost() { return host; }
         public int getPort() { return port; }
@@ -187,6 +268,11 @@ public class ServerListService {
         public String getVersion() { return version; }
         public String getMotd() { return motd; }
         public String getTimestamp() { return timestamp; }
+
+        public float getTickRate() {
+            if (latency <= 0) return 0.0f;
+            return Math.max(0.0f, 20.0f - (latency / 50.0f));
+        }
 
         public double getLoadPercentage() {
             if (maxPlayers <= 0 || status.equals("offline")) return 0.0;
@@ -202,7 +288,7 @@ public class ServerListService {
         }
 
         public boolean isHealthy() {
-            return status.equals("online") && latency > 0 && latency < 1000; // Under 1 second ping
+            return status.equals("online") && latency > 0 && latency < 1000;
         }
     }
 }

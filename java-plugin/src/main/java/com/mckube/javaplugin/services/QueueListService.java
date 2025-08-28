@@ -22,6 +22,7 @@ public class QueueListService {
 
     private final ProxyServer server;
     private final Logger logger;
+    private LogsService logsService;
 
     private final Deque<UUID> queueOrder = new ConcurrentLinkedDeque<>();
     private final Set<UUID> queueSet = ConcurrentHashMap.newKeySet();
@@ -35,9 +36,23 @@ public class QueueListService {
         this.logger = logger;
     }
 
+    public void setLogsService(LogsService logsService) {
+        this.logsService = logsService;
+    }
+
     @Subscribe
     public void onPlayerConnect(LoginEvent event) {
         logger.info("=== LoginEvent triggered for: {} ===", event.getPlayer().getUsername());
+
+        if (logsService != null) {
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("ip_address", event.getPlayer().getRemoteAddress().getAddress().getHostAddress());
+            metadata.put("event_type", "login_initiated");
+            logsService.logPlayerJoin("Player login process started",
+                    event.getPlayer().getUsername(),
+                    event.getPlayer().getUniqueId().toString(),
+                    metadata);
+        }
     }
 
     @Subscribe(priority = (short) 0)
@@ -50,8 +65,30 @@ public class QueueListService {
         boolean added = addToQueueIfAbsent(playerId);
         if (added) {
             logger.info("Player {} added to queue", player.getUsername());
+
+            if (logsService != null) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("queue_position", getPlayerQueuePosition(playerId));
+                metadata.put("queue_size", queueSet.size());
+                metadata.put("ip_address", player.getRemoteAddress().getAddress().getHostAddress());
+                logsService.logQueueJoin("Player added to queue",
+                        player.getUsername(),
+                        playerId.toString(),
+                        metadata);
+            }
         } else {
             logger.info("Player {} already in queue (re-login?)", player.getUsername());
+
+            if (logsService != null) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("queue_position", getPlayerQueuePosition(playerId));
+                metadata.put("queue_size", queueSet.size());
+                metadata.put("reason", "already_in_queue");
+                logsService.logPlayerReconnect("Player reconnected while in queue",
+                        player.getUsername(),
+                        playerId.toString(),
+                        metadata);
+            }
         }
 
         int position = getPlayerQueuePosition(playerId);
@@ -84,6 +121,17 @@ public class QueueListService {
                 player.getUsername(), targetServer);
 
         if (!targetServer.equals(QUEUE_SERVER_NAME) && contains(playerId)) {
+            if (logsService != null) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("from_queue", true);
+                metadata.put("queue_position", getPlayerQueuePosition(playerId));
+                metadata.put("queue_size_before", queueSet.size());
+                logsService.logQueueLeave("Player leaving queue to connect to server",
+                        player.getUsername(),
+                        playerId.toString(),
+                        metadata);
+            }
+
             removePlayerFromQueue(playerId, "successfully connecting to " + targetServer);
             player.sendMessage(Component.text("Connecting you to server: " + targetServer)
                     .color(NamedTextColor.GREEN));
@@ -94,6 +142,15 @@ public class QueueListService {
     public void onPlayerDisconnect(DisconnectEvent event) {
         UUID playerId = event.getPlayer().getUniqueId();
         if (contains(playerId)) {
+            if (logsService != null) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("queue_position", getPlayerQueuePosition(playerId));
+                metadata.put("disconnect_reason", "player_left_proxy");
+                logsService.logQueueLeave("Player disconnected while in queue",
+                        event.getPlayer().getUsername(),
+                        playerId.toString(),
+                        metadata);
+            }
             removePlayerFromQueue(playerId, "disconnect from proxy");
         }
     }
@@ -148,18 +205,38 @@ public class QueueListService {
     public boolean removePlayerFromQueueName(String playerName) {
         Optional<Player> optPlayer = server.getPlayer(playerName);
         if (optPlayer.isEmpty()) {
+            if (logsService != null) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("reason", "player_not_found");
+                metadata.put("requested_by", "admin");
+                logsService.logTransferFailed("Failed to remove player from queue - player not found",
+                        playerName,
+                        null,
+                        metadata);
+            }
             return false;
         }
+
         Player player = optPlayer.get();
         UUID uuid = player.getUniqueId();
 
         boolean wasInQueue = contains(uuid);
         if (wasInQueue) {
-            removePlayerFromQueue(uuid, "removed by administrator");
-        }
+            if (logsService != null) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("queue_position", getPlayerQueuePosition(uuid));
+                metadata.put("removed_by", "admin");
+                metadata.put("action", "kick_and_remove");
+                logsService.logQueueRemoveAdmin("Player removed from queue by administrator",
+                        player.getUsername(),
+                        uuid.toString(),
+                        metadata);
+            }
 
-        player.disconnect(Component.text("Removed from queue by administrator")
-                .color(NamedTextColor.RED));
+            removePlayerFromQueue(uuid, "removed by administrator");
+            player.disconnect(Component.text("Removed from queue by Administrator")
+                    .color(NamedTextColor.RED));
+        }
 
         logger.info("Player {} {} in queue and was kicked", playerName, wasInQueue ? "was" : "was not");
         return wasInQueue;
@@ -168,6 +245,18 @@ public class QueueListService {
     public boolean removePlayerFromQueueUUID(UUID playerId) {
         boolean wasInQueue = contains(playerId);
         if (wasInQueue) {
+            if (logsService != null) {
+                String playerName = server.getPlayer(playerId).map(Player::getUsername).orElse("Unknown");
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("queue_position", getPlayerQueuePosition(playerId));
+                metadata.put("removed_by", "admin");
+                metadata.put("action", "kick_and_remove");
+                logsService.logQueueRemoveAdmin("Player removed from queue by administrator (UUID)",
+                        playerName,
+                        playerId.toString(),
+                        metadata);
+            }
+
             removePlayerFromQueue(playerId, "removed by administrator");
             server.getPlayer(playerId).ifPresent(player -> {
                 player.disconnect(Component.text("Removed from queue by administrator")
@@ -228,7 +317,6 @@ public class QueueListService {
         }
     }
 
-
     private void updateAllBossBars() {
         List<UUID> snapshot;
         queueLock.lock();
@@ -271,8 +359,6 @@ public class QueueListService {
                     queueSet.remove(u);
                     queueOrder.remove(u);
                     BossBar bb = playerBossBars.remove(u);
-                    if (bb != null) {
-                    }
                     logger.info("Removed offline player {} during cleanup", u);
                 }
             }
@@ -281,6 +367,13 @@ public class QueueListService {
         }
 
         if (!toRemove.isEmpty()) {
+            if (logsService != null) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("players_removed", toRemove.size());
+                metadata.put("queue_size_after", queueSet.size());
+                metadata.put("cleanup_time", java.time.Instant.now().toString());
+                logsService.logQueueCleanup("Queue cleanup completed - removed offline players", metadata);
+            }
             updateAllBossBars();
         }
     }

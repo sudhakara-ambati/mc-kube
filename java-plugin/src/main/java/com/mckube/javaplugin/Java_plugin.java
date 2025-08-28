@@ -1,9 +1,8 @@
 package com.mckube.javaplugin;
 
 import com.google.inject.Inject;
-import com.mckube.javaplugin.services.QueueListService;
-import com.mckube.javaplugin.services.ServerListService;
-import com.mckube.javaplugin.services.TransferService;
+import java.nio.file.Path;
+import com.mckube.javaplugin.services.*;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
@@ -24,6 +23,9 @@ public class Java_plugin {
     private TransferService transferService;
     private QueueListService queueListService;
     private ServerListService serverListService;
+    private BroadcastService broadcastService;
+    private MetricsService metricsService;
+    private LogsService logsService; // Add LogsService
 
     @Inject
     public Java_plugin(ProxyServer server, Logger logger) {
@@ -35,24 +37,40 @@ public class Java_plugin {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         logger.info("Plugin initialized successfully.");
 
+        // Initialize LogsService first since other services depend on it
+        logsService = new LogsService(server, logger);
+
+        // Initialize other services
         transferService = new TransferService(server, logger);
         queueListService = new QueueListService(server, logger);
         serverListService = new ServerListService(server, logger);
+        broadcastService = new BroadcastService(server, logger);
+        metricsService = new MetricsService(logger);
 
+        // Wire up LogsService dependencies
+        transferService.setLogsService(logsService);
+        queueListService.setLogsService(logsService);
+        serverListService.setLogsService(logsService);
+        broadcastService.setLogsService(logsService);
+        metricsService.setLogsService(logsService);
+
+        // Register event listeners for both LogsService and QueueListService
+        server.getEventManager().register(this, logsService);
         server.getEventManager().register(this, queueListService);
 
-        logger.info("=== QueueListService event listeners registered ===");
+        logger.info("=== Event listeners registered for LogsService and QueueListService ===");
 
         restServer = new RestServer(
                 transferService,
                 queueListService,
                 serverListService,
+                broadcastService,
+                metricsService,
+                logsService, // Pass LogsService to RestServer
                 logger
         );
 
         restServer.start(8080);
-
-        transferService.registerCommand();
 
         logger.info("MC-Kube plugin fully initialized with REST API on port 8080");
         logger.info("REST API endpoints registered:");
@@ -63,16 +81,23 @@ public class Java_plugin {
         logger.info("  GET  /server/status - Server names and basic status (fastest)");
         logger.info("  GET  /server/players - Player counts across all servers");
         logger.info("  POST /transfer - Transfer players between servers");
-        logger.info("  GET  /queue/playerlist - Get queued player names");
-        logger.info("  GET  /queue/uuidlist - Get queued player UUIDs");
+        logger.info("  GET  /queue/list - Get queued player UUIDs");
         logger.info("  GET  /queue/count - Get queue count");
-        logger.info("  POST /queue/removename - Remove player from queue");
-        logger.info("  POST /queue/removeuuid - Remove player from queue");
+        logger.info("  POST /queue/remove - Remove player from queue");
+        logger.info("  GET  /metrics/{server} - Fetch server metrics");
+        logger.info("  GET  /cluster/logs - Fetch recent cluster events or plugin logs");
+        logger.info("  GET  /cluster/logs/stats - Get log statistics");
+        logger.info("  DELETE /cluster/logs - Clear all logs (admin)");
     }
 
     @Subscribe
     public void onProxyShutdown(ProxyShutdownEvent event) {
         logger.info("Plugin shutting down...");
+
+        // Log shutdown event
+        if (logsService != null) {
+            logsService.logSystemEvent("Plugin shutdown initiated", null);
+        }
 
         if (restServer != null) {
             logger.info("Stopping REST API server...");
@@ -91,6 +116,14 @@ public class Java_plugin {
             logger.debug("Server list service cleanup completed");
         }
 
+        if (metricsService != null) {
+            logger.debug("Metrics service cleanup completed");
+        }
+
+        if (logsService != null) {
+            logger.debug("Logs service cleanup completed");
+        }
+
         logger.info("Plugin shut down successfully.");
     }
 
@@ -104,6 +137,18 @@ public class Java_plugin {
 
     public ServerListService getServerListService() {
         return serverListService;
+    }
+
+    public BroadcastService getBroadcastService() {
+        return broadcastService;
+    }
+
+    public MetricsService getMetricsService() {
+        return metricsService;
+    }
+
+    public LogsService getLogsService() {
+        return logsService;
     }
 
     public RestServer getRestServer() {

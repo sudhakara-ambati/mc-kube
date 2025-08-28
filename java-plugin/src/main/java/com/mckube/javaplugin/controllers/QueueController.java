@@ -1,14 +1,13 @@
 package com.mckube.javaplugin.controllers;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mckube.javaplugin.services.QueueListService;
+import com.mckube.javaplugin.utils.ControllerUtils;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import org.slf4j.Logger;
+
 import java.util.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
 
 public class QueueController {
 
@@ -21,97 +20,125 @@ public class QueueController {
     }
 
     public void registerRoutes(Javalin app) {
-        app.get("/queue/playerlist", this::getPlayerList);
-        app.get("/queue/uuidlist", this::getUuidList);
+        app.get("/queue/list", this::getQueueList);
         app.get("/queue/count", this::getQueueCount);
-        app.post("/queue/removename", this::removePlayerName);
-        app.post("/queue/removeuuid", this::removePlayerUUID);
+        app.post("/queue/remove", this::removePlayer);
     }
 
-    private void getPlayerList(io.javalin.http.Context ctx) {
+    private void getQueueList(Context ctx) {
         try {
-            List<String> playerNames = queueListService.getQueuedPlayerNames();
-            ctx.status(200).json(playerNames);
+            String type = ctx.queryParam("type");
+
+            // Default to usernames if no type specified
+            if (type == null || type.trim().isEmpty()) {
+                type = "username";
+            }
+
+            List<String> queueData;
+            String listType;
+
+            switch (type.toLowerCase()) {
+                case "uuid":
+                    queueData = queueListService.getQueuedPlayerUUIDs();
+                    listType = "uuid";
+                    break;
+                case "username":
+                default:
+                    queueData = queueListService.getQueuedPlayerNames();
+                    listType = "username";
+                    break;
+            }
+
+            Map<String, Object> response = ControllerUtils.createSuccessResponse("Queue list retrieved successfully");
+            response.put("type", listType);
+            response.put("data", queueData);
+            response.put("count", queueData.size());
+
+            ctx.status(200).json(response);
         } catch (Exception e) {
-            logger.error("Error getting player list", e);
-            ctx.status(500).json(createErrorResponse("Error retrieving player list"));
+            logger.error("Error getting queue list with type: " + ctx.queryParam("type"), e);
+            ctx.status(500).json(ControllerUtils.createErrorResponse("Error retrieving queue list"));
         }
     }
 
-    private void getUuidList(io.javalin.http.Context ctx) {
+    private void getQueueCount(Context ctx) {
         try {
-            List<String> playerNames = queueListService.getQueuedPlayerUUIDs();
-            ctx.status(200).json(playerNames);
-        } catch (Exception e) {
-            logger.error("Error getting player list", e);
-            ctx.status(500).json(createErrorResponse("Error retrieving player list"));
-        }
-    }
+            int queueCount = queueListService.getQueueCount();
 
-    private void getQueueCount(io.javalin.http.Context ctx) {
-        try {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", queueListService.getQueueCount());
+            Map<String, Object> response = ControllerUtils.createSuccessResponse("Queue count retrieved successfully");
+            response.put("count", queueCount);
+
             ctx.status(200).json(response);
         } catch (Exception e) {
             logger.error("Error getting queue count", e);
-            ctx.status(500).json(createErrorResponse("Error retrieving queue count"));
+            ctx.status(500).json(ControllerUtils.createErrorResponse("Error retrieving queue count"));
         }
     }
 
-    private void removePlayerName(io.javalin.http.Context ctx) {
+    private void removePlayer(Context ctx) {
         try {
-            JsonObject body = JsonParser.parseString(ctx.body()).getAsJsonObject();
-            String playerName = body.get("player").getAsString();
+            JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
+            if (jsonObject == null) return; // Error already set in context
 
-            boolean success = queueListService.removePlayerFromQueueName(playerName);
-            Map<String, Object> response = createRemoveResponse(success, playerName);
-            ctx.status(success ? 200 : 400).json(response);
+            // Validate type field
+            String type = ControllerUtils.validateJsonField(ctx, jsonObject, "type", "Type");
+            if (type == null) return; // Error already set in context
+
+            boolean success;
+            String identifier;
+
+            switch (type.toLowerCase()) {
+                case "username":
+                    identifier = ControllerUtils.validateJsonField(ctx, jsonObject, "player", "Player name");
+                    if (identifier == null) return; // Error already set in context
+                    success = queueListService.removePlayerFromQueueName(identifier);
+                    break;
+
+                case "uuid":
+                    identifier = ControllerUtils.validateJsonField(ctx, jsonObject, "uuid", "UUID");
+                    if (identifier == null) return; // Error already set in context
+
+                    try {
+                        UUID uuid = UUID.fromString(identifier);
+                        success = queueListService.removePlayerFromQueueUUID(uuid);
+                    } catch (IllegalArgumentException e) {
+                        logger.error("Invalid UUID format: {}", identifier);
+                        ctx.status(400).json(ControllerUtils.createErrorResponse("Invalid UUID format"));
+                        return;
+                    }
+                    break;
+
+                default:
+                    ctx.status(400).json(ControllerUtils.createErrorResponse("Invalid type. Must be 'usernames' or 'uuids'"));
+                    return;
+            }
+
+            Map<String, Object> response = createRemoveResponse(success, identifier, type);
+            ctx.status(success ? 200 : 404).json(response);
 
         } catch (Exception e) {
             logger.error("Error removing player from queue", e);
-            ctx.status(500).json(createErrorResponse("Internal error"));
+            ctx.status(500).json(ControllerUtils.createErrorResponse("Internal error removing player from queue"));
         }
     }
 
-    private void removePlayerUUID(io.javalin.http.Context ctx) {
-        try {
-            JsonObject body = JsonParser.parseString(ctx.body()).getAsJsonObject();
-            String playerUUID = body.get("uuid").getAsString();
-
-            UUID uuid = UUID.fromString(playerUUID);
-
-            boolean success = queueListService.removePlayerFromQueueUUID(uuid);
-            Map<String, Object> response = createRemoveResponse(success, playerUUID);
-            ctx.status(success ? 200 : 400).json(response);
-
-        } catch (IllegalArgumentException e) {
-            logger.error("Invalid UUID format: {}", e.getMessage());
-            ctx.status(400).json(createErrorResponse("Invalid UUID format"));
-        } catch (Exception e) {
-            logger.error("Error removing player from queue by UUID", e);
-            ctx.status(500).json(createErrorResponse("Internal error"));
-        }
-    }
-
-    private Map<String, Object> createRemoveResponse(boolean success, String playerName) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", success);
+    private Map<String, Object> createRemoveResponse(boolean success, String identifier, String type) {
+        String identifierType = type.equals("usernames") ? "Player" : "UUID";
+        String message;
 
         if (success) {
-            response.put("message", "Player " + playerName + " removed from queue");
+            message = identifierType + " " + identifier + " removed from queue successfully";
         } else {
-            response.put("message", "Player " + playerName + " not found in queue");
+            message = identifierType + " " + identifier + " not found in queue";
         }
 
-        return response;
-    }
+        Map<String, Object> response = success
+                ? ControllerUtils.createSuccessResponse(message)
+                : ControllerUtils.createErrorResponse(message);
 
-    private Map<String, Object> createErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
+        response.put("type", type);
+        response.put(type.equals("usernames") ? "player" : "uuid", identifier);
+
         return response;
     }
 }

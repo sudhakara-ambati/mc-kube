@@ -1,6 +1,7 @@
 package com.mckube.javaplugin.controllers;
 
 import com.mckube.javaplugin.services.ServerListService;
+import com.mckube.javaplugin.utils.ControllerUtils;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import org.slf4j.Logger;
@@ -8,9 +9,7 @@ import org.slf4j.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 public class ServerController {
 
@@ -46,21 +45,19 @@ public class ServerController {
                                 })
                                 .toList();
 
-                        Map<String, Object> response = new HashMap<>();
-                        response.put("success", true);
+                        Map<String, Object> response = ControllerUtils.createSuccessResponse("Server list retrieved successfully");
                         response.put("servers", basicServerInfo);
                         response.put("totalServers", servers.size());
-                        response.put("timestamp", java.time.Instant.now().toString());
 
                         ctx.status(200).json(response);
                     } catch (Exception e) {
                         logger.error("Error building server list response", e);
-                        ctx.status(500).json(createErrorResponse("Error building response"));
+                        ctx.status(500).json(ControllerUtils.createErrorResponse("Error building response"));
                     }
                 })
                 .exceptionally(throwable -> {
                     logger.error("Error getting server list", throwable);
-                    ctx.status(500).json(createErrorResponse("Failed to retrieve server list"));
+                    ctx.status(500).json(ControllerUtils.createErrorResponse("Failed to retrieve server list"));
                     return null;
                 });
 
@@ -72,18 +69,18 @@ public class ServerController {
                 .thenAccept(servers -> {
                     try {
                         Map<String, Object> summary = buildSummary(servers);
-                        summary.put("success", true);
-                        summary.put("timestamp", java.time.Instant.now().toString());
+                        Map<String, Object> response = ControllerUtils.createSuccessResponse("Server summary retrieved successfully");
+                        response.putAll(summary);
 
-                        ctx.status(200).json(summary);
+                        ctx.status(200).json(response);
                     } catch (Exception e) {
                         logger.error("Error building summary response", e);
-                        ctx.status(500).json(createErrorResponse("Error building summary"));
+                        ctx.status(500).json(ControllerUtils.createErrorResponse("Error building summary"));
                     }
                 })
                 .exceptionally(throwable -> {
                     logger.error("Error getting server summary", throwable);
-                    ctx.status(500).json(createErrorResponse("Failed to retrieve server summary"));
+                    ctx.status(500).json(ControllerUtils.createErrorResponse("Failed to retrieve server summary"));
                     return null;
                 });
 
@@ -97,36 +94,37 @@ public class ServerController {
                 .thenAccept(serverOpt -> {
                     try {
                         if (serverOpt.isEmpty()) {
-                            ctx.status(404).json(createErrorResponse("Server not found: " + serverName));
+                            ctx.status(404).json(ControllerUtils.createErrorResponse("Server not found: " + serverName));
                             return;
                         }
 
                         ServerListService.ServerStatus server = serverOpt.get();
-                        Map<String, Object> serverDetails = new HashMap<>();
-                        serverDetails.put("success", true);
-                        serverDetails.put("name", server.getName());
-                        serverDetails.put("host", server.getHost());
-                        serverDetails.put("port", server.getPort());
-                        serverDetails.put("status", server.getStatus());
-                        serverDetails.put("currentPlayers", server.getCurrentPlayers());
-                        serverDetails.put("maxPlayers", server.getMaxPlayers());
-                        serverDetails.put("latency", server.getLatency());
-                        serverDetails.put("version", server.getVersion());
-                        serverDetails.put("motd", server.getMotd());
-                        serverDetails.put("loadPercentage", server.getLoadPercentage());
-                        serverDetails.put("loadStatus", server.getLoadStatus());
-                        serverDetails.put("isHealthy", server.isHealthy());
-                        serverDetails.put("timestamp", server.getTimestamp());
+                        Map<String, Object> response = ControllerUtils.createSuccessResponse("Server details retrieved successfully");
 
-                        ctx.status(200).json(serverDetails);
+                        // Add all server details
+                        response.put("name", server.getName());
+                        response.put("host", server.getHost());
+                        response.put("port", server.getPort());
+                        response.put("status", server.getStatus());
+                        response.put("currentPlayers", server.getCurrentPlayers());
+                        response.put("maxPlayers", server.getMaxPlayers());
+                        response.put("latency", server.getLatency());
+                        response.put("version", server.getVersion());
+                        response.put("motd", server.getMotd());
+                        response.put("loadPercentage", server.getLoadPercentage());
+                        response.put("loadStatus", server.getLoadStatus());
+                        response.put("isHealthy", server.isHealthy());
+                        response.put("serverTimestamp", server.getTimestamp());
+
+                        ctx.status(200).json(response);
                     } catch (Exception e) {
                         logger.error("Error building server details response", e);
-                        ctx.status(500).json(createErrorResponse("Error building server details"));
+                        ctx.status(500).json(ControllerUtils.createErrorResponse("Error building server details"));
                     }
                 })
                 .exceptionally(throwable -> {
                     logger.error("Error getting server details for: " + serverName, throwable);
-                    ctx.status(500).json(createErrorResponse("Failed to retrieve server details"));
+                    ctx.status(500).json(ControllerUtils.createErrorResponse("Failed to retrieve server details"));
                     return null;
                 });
 
@@ -146,20 +144,18 @@ public class ServerController {
                             statusInfo.put(server.getName(), info);
                         }
 
-                        Map<String, Object> response = new HashMap<>();
-                        response.put("success", true);
+                        Map<String, Object> response = ControllerUtils.createSuccessResponse("Server status retrieved successfully");
                         response.put("servers", statusInfo);
-                        response.put("timestamp", java.time.Instant.now().toString());
 
                         ctx.status(200).json(response);
                     } catch (Exception e) {
                         logger.error("Error building status response", e);
-                        ctx.status(500).json(createErrorResponse("Error building status"));
+                        ctx.status(500).json(ControllerUtils.createErrorResponse("Error building status"));
                     }
                 })
                 .exceptionally(throwable -> {
                     logger.error("Error getting server status", throwable);
-                    ctx.status(500).json(createErrorResponse("Failed to retrieve server status"));
+                    ctx.status(500).json(ControllerUtils.createErrorResponse("Failed to retrieve server status"));
                     return null;
                 });
 
@@ -189,23 +185,21 @@ public class ServerController {
                                 .mapToInt(ServerListService.ServerStatus::getMaxPlayers)
                                 .sum();
 
-                        Map<String, Object> response = new HashMap<>();
-                        response.put("success", true);
+                        Map<String, Object> response = ControllerUtils.createSuccessResponse("Player counts retrieved successfully");
                         response.put("servers", playerInfo);
                         response.put("totalPlayers", totalPlayers);
                         response.put("totalMaxPlayers", totalMaxPlayers);
                         response.put("networkLoadPercentage", totalMaxPlayers > 0 ? (double) totalPlayers / totalMaxPlayers * 100.0 : 0.0);
-                        response.put("timestamp", java.time.Instant.now().toString());
 
                         ctx.status(200).json(response);
                     } catch (Exception e) {
                         logger.error("Error building player counts response", e);
-                        ctx.status(500).json(createErrorResponse("Error building player counts"));
+                        ctx.status(500).json(ControllerUtils.createErrorResponse("Error building player counts"));
                     }
                 })
                 .exceptionally(throwable -> {
                     logger.error("Error getting player counts", throwable);
-                    ctx.status(500).json(createErrorResponse("Failed to retrieve player counts"));
+                    ctx.status(500).json(ControllerUtils.createErrorResponse("Failed to retrieve player counts"));
                     return null;
                 });
 
@@ -232,13 +226,5 @@ public class ServerController {
         summary.put("healthyServers", healthyServers);
         summary.put("totalPlayers", totalPlayers);
         return summary;
-    }
-
-    private Map<String, Object> createErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        response.put("timestamp", java.time.Instant.now().toString());
-        return response;
     }
 }
