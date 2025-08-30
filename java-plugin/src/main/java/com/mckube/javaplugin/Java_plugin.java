@@ -2,6 +2,11 @@ package com.mckube.javaplugin;
 
 import com.google.inject.Inject;
 import java.nio.file.Path;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import com.mckube.javaplugin.services.*;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -19,12 +24,16 @@ public class Java_plugin {
 
     private final ProxyServer server;
     private final Logger logger;
+
+    private MongoClient mongoClient;
+
     private RestServer restServer;
     private TransferService transferService;
     private QueueListService queueListService;
     private ServerListService serverListService;
     private BroadcastService broadcastService;
     private MetricsService metricsService;
+    private ServerManagementService serverManagementService;
     private LogsService logsService; // Add LogsService
 
     @Inject
@@ -37,6 +46,9 @@ public class Java_plugin {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         logger.info("Plugin initialized successfully.");
 
+        // Initialize MongoDB client
+        initializeMongoDB();
+
         // Initialize LogsService first since other services depend on it
         logsService = new LogsService(server, logger);
 
@@ -46,6 +58,7 @@ public class Java_plugin {
         serverListService = new ServerListService(server, logger);
         broadcastService = new BroadcastService(server, logger);
         metricsService = new MetricsService(logger);
+        serverManagementService = new ServerManagementService(server, mongoClient, logger);
 
         // Wire up LogsService dependencies
         transferService.setLogsService(logsService);
@@ -53,10 +66,15 @@ public class Java_plugin {
         serverListService.setLogsService(logsService);
         broadcastService.setLogsService(logsService);
         metricsService.setLogsService(logsService);
+        serverManagementService.setLogsService(logsService);
 
         // Register event listeners for both LogsService and QueueListService
         server.getEventManager().register(this, logsService);
         server.getEventManager().register(this, queueListService);
+
+        logger.info("Loading servers from MongoDB...");
+        serverManagementService.loadServersOnStartup();
+        logger.info("Server loading completed.");
 
         logger.info("=== Event listeners registered for LogsService and QueueListService ===");
 
@@ -67,6 +85,7 @@ public class Java_plugin {
                 broadcastService,
                 metricsService,
                 logsService, // Pass LogsService to RestServer
+                serverManagementService,
                 logger
         );
 
@@ -127,6 +146,46 @@ public class Java_plugin {
         logger.info("Plugin shut down successfully.");
     }
 
+    private void initializeMongoDB() {
+    try {
+        // For local MongoDB without authentication
+        String mongoUri = "mongodb://localhost:27017/";
+        
+        mongoClient = MongoClients.create(mongoUri);
+        
+        // Test the connection
+        mongoClient.getDatabase("mc_kube").runCommand(new org.bson.Document("ping", 1));
+        mongoClient.getDatabase("mc_kube").listCollectionNames().first();
+        logger.info("Successfully connected to MongoDB!");
+        
+        createDatabaseIndexes();
+
+    } catch (Exception e) {
+        logger.error("Failed to connect to MongoDB", e);
+        throw new RuntimeException("MongoDB connection failed", e);
+    }
+    }
+
+        // Add this to your plugin initialization:
+    private void createDatabaseIndexes() {
+        try {
+            MongoDatabase database = mongoClient.getDatabase("mc_kube");
+            
+            // Create unique index on server name (prevents duplicates)
+            database.getCollection("servers")
+                    .createIndex(Indexes.ascending("name"), 
+                        new IndexOptions().unique(true));
+            
+            // Index for enabled/disabled queries
+            database.getCollection("servers")
+                    .createIndex(Indexes.ascending("enabled"));
+                    
+            logger.info("Database indexes created successfully");
+        } catch (Exception e) {
+            logger.warn("Index creation failed (might already exist): {}", e.getMessage());
+        }
+    }
+
     public TransferService getTransferService() {
         return transferService;
     }
@@ -149,6 +208,10 @@ public class Java_plugin {
 
     public LogsService getLogsService() {
         return logsService;
+    }
+
+    public ServerManagementService getServerManagementService() {
+        return serverManagementService;
     }
 
     public RestServer getRestServer() {

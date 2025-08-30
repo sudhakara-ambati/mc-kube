@@ -1,0 +1,1030 @@
+{
+  "success": true,
+  "count": 50,
+  "limit": 50,
+  "message": "Cluster logs retrieved successfully",
+  "events": [
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.96,
+        "memory_used_gb": 1.02,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.49,
+        "system_cpu_percent": 35.38,
+        "memory_percent": 51.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:02:07.105766700Z"
+      },
+      "id": "8610414b-6f8d-40e7-be65-6217a32c09f8",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:02:07.108766900Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.96,
+        "memory_used_gb": 0.98,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.49,
+        "system_cpu_percent": 37.01,
+        "memory_percent": 49.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:02:06.791549400Z"
+      },
+      "id": "eed37214-f728-43f3-9e26-cd0a17f8088f",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:02:06.794749400Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.9,
+        "memory_used_gb": 0.99,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.47,
+        "system_cpu_percent": 35.54,
+        "memory_percent": 49.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:02:05.105643500Z"
+      },
+      "id": "bd7dffa7-e790-47c6-97d8-5bfac17befb0",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:02:05.107644400Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.84,
+        "memory_used_gb": 0.97,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.45,
+        "system_cpu_percent": 35.65,
+        "memory_percent": 48.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:02:04.799083Z"
+      },
+      "id": "a30dd0d1-4d32-4e80-b26b-2d910f6d4e32",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:02:04.802083800Z"
+    },
+    {
+      "server_name": "queue",
+      "metadata": {
+        "previous_server": "lobby"
+      },
+      "id": "098cb0f1-ac73-40fb-8ee7-c045e49be56f",
+      "player_name": "Mithikayl",
+      "type": "server_connect",
+      "message": "Player connected to server",
+      "player_uuid": "853a8cf5-0937-4eb5-81c7-813ed2bb914a",
+      "timestamp": "2025-08-30T23:02:03.994774800Z"
+    },
+    {
+      "server_name": "lobby",
+      "metadata": {
+        "velocity_operation": "unregisterServer",
+        "server_name": "lobby",
+        "operation_duration_ms": 15,
+        "operation_time": "2025-08-30T23:02:03.555406500Z",
+        "previous_state": "enabled",
+        "database_operation": "updateOne",
+        "server_ip": "localhost",
+        "new_state": "disabled",
+        "server_port": 30001,
+        "kicked_players": 1
+      },
+      "id": "8b433afa-ac0d-4537-ba9e-888d9ac0674b",
+      "type": "server_offline",
+      "message": "Server disabled successfully",
+      "timestamp": "2025-08-30T23:02:03.555406500Z"
+    },
+    {
+      "server_name": "queue",
+      "metadata": {
+        "queue_size": 1,
+        "queue_position": 1,
+        "ip_address": "127.0.0.1"
+      },
+      "id": "5d882ee1-6a95-43f6-bbc9-6a57be7c2133",
+      "player_name": "Mithikayl",
+      "type": "queue_join",
+      "message": "Player transferred to queue server and added to queue",
+      "player_uuid": "853a8cf5-0937-4eb5-81c7-813ed2bb914a",
+      "timestamp": "2025-08-30T23:02:03.542406900Z"
+    },
+    {
+      "server_name": "lobby",
+      "metadata": {
+        "kick_time": "2025-08-30T23:02:03.542406900Z",
+        "reason": "Server is being disabled",
+        "moved_to_lobby": true
+      },
+      "id": "367cada1-04dc-4b24-8638-d5c073988ea8",
+      "player_name": "Mithikayl",
+      "type": "server_connect",
+      "message": "Player kicked from server",
+      "player_uuid": "853a8cf5-0937-4eb5-81c7-813ed2bb914a",
+      "timestamp": "2025-08-30T23:02:03.542406900Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.65,
+        "memory_used_gb": 0.96,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.39,
+        "system_cpu_percent": 46.19,
+        "memory_percent": 48.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:02:03.111737500Z"
+      },
+      "id": "d6076c1f-04fb-4cdc-8ee3-1e2539446158",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:02:03.114737400Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.59,
+        "memory_used_gb": 0.94,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.37,
+        "system_cpu_percent": 47.21,
+        "memory_percent": 47.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:02:02.802722600Z"
+      },
+      "id": "c14adb8c-f689-4e3b-b5fa-699d0cf488c7",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:02:02.805722300Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.15,
+        "memory_used_gb": 0.93,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.23,
+        "system_cpu_percent": 35.59,
+        "memory_percent": 46.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:02:01.102669200Z"
+      },
+      "id": "1583a404-0de4-4e6c-8cd2-9e6368fba609",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:02:01.105668Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.12,
+        "memory_used_gb": 0.91,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.22,
+        "system_cpu_percent": 34.87,
+        "memory_percent": 45.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:02:00.798669200Z"
+      },
+      "id": "9e226d7b-1f5f-46e9-9720-5cfc5491b83f",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:02:00.801669700Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.09,
+        "memory_used_gb": 0.9,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.21,
+        "system_cpu_percent": 45.31,
+        "memory_percent": 45.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:59.102915900Z"
+      },
+      "id": "7a9dc6ff-7d3b-4451-8d2e-f048d1bb9955",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:59.105916300Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 82.02,
+        "memory_used_gb": 0.89,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.19,
+        "system_cpu_percent": 46.54,
+        "memory_percent": 44.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:58.781114900Z"
+      },
+      "id": "58ea3471-8741-4e96-aa33-021eeb9b6f41",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:58.784140100Z"
+    },
+    {
+      "server_name": "lobby",
+      "metadata": {
+        "previous_server": "queue"
+      },
+      "id": "e067f096-625a-4bc4-835a-aa0b7bdba284",
+      "player_name": "Mithikayl",
+      "type": "server_connect",
+      "message": "Player connected to server",
+      "player_uuid": "853a8cf5-0937-4eb5-81c7-813ed2bb914a",
+      "timestamp": "2025-08-30T23:01:58.240927100Z"
+    },
+    {
+      "server_name": "queue",
+      "metadata": {
+        "queue_size_before": 1,
+        "from_queue": true,
+        "queue_position": 1
+      },
+      "id": "4318cc45-e70e-48b0-afa7-e6a24b043a25",
+      "player_name": "Mithikayl",
+      "type": "queue_leave",
+      "message": "Player leaving queue to connect to server",
+      "player_uuid": "853a8cf5-0937-4eb5-81c7-813ed2bb914a",
+      "timestamp": "2025-08-30T23:01:58.144889700Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.9,
+        "memory_used_gb": 0.78,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.15,
+        "system_cpu_percent": 39.94,
+        "memory_percent": 39.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:57.113073300Z"
+      },
+      "id": "f7f79243-02d4-4145-90c2-4b418db43334",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:57.115072700Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.9,
+        "memory_used_gb": 0.85,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.15,
+        "system_cpu_percent": 37.79,
+        "memory_percent": 42.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:56.811791900Z"
+      },
+      "id": "78267574-3fd5-4592-a63a-c50ba19cabd1",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:56.814792100Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.77,
+        "memory_used_gb": 0.57,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.11,
+        "system_cpu_percent": 43.24,
+        "memory_percent": 28.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:55.101597700Z"
+      },
+      "id": "f36b6fd5-18da-45bb-aea3-7435ab5f5584",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:55.103596800Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "server_ip": "26.40.23.207",
+        "system_cpu_percent": 43.2,
+        "process_cpu_percent": 0.0,
+        "memory_percent": 41.5,
+        "tps": 20.0,
+        "retrieval_time": "2025-08-30T23:01:54.928792100Z"
+      },
+      "id": "2e8059e5-75f7-4ea6-8a82-b0e68eb2703c",
+      "type": "metrics_collected",
+      "message": "Metrics retrieved for server",
+      "timestamp": "2025-08-30T23:01:54.928792100Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.8,
+        "memory_used_gb": 0.83,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.12,
+        "system_cpu_percent": 43.2,
+        "memory_percent": 41.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:54.786755Z"
+      },
+      "id": "3a2bb499-d3ce-44c7-af73-289dd0f8962d",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:54.788757300Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.68,
+        "memory_used_gb": 1.11,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.08,
+        "system_cpu_percent": 40.67,
+        "memory_percent": 55.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:53.104547700Z"
+      },
+      "id": "4ad46e5b-6cfb-4156-888c-a0cfba1c0474",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:53.106549200Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.65,
+        "memory_used_gb": 0.81,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.07,
+        "system_cpu_percent": 40.14,
+        "memory_percent": 40.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:52.799804400Z"
+      },
+      "id": "6bcf2a18-8069-4da3-a746-dd44dade98af",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:52.801804900Z"
+    },
+    {
+      "server_name": "queue",
+      "metadata": {
+        "previous_server": "lobby"
+      },
+      "id": "0fe8089b-fdc7-4036-990c-922481f7d37b",
+      "player_name": "Mithikayl",
+      "type": "server_connect",
+      "message": "Player connected to server",
+      "player_uuid": "853a8cf5-0937-4eb5-81c7-813ed2bb914a",
+      "timestamp": "2025-08-30T23:01:52.023977600Z"
+    },
+    {
+      "server_name": "queue",
+      "metadata": {
+        "queue_size": 1,
+        "queue_position": 1,
+        "ip_address": "127.0.0.1"
+      },
+      "id": "1364b90e-44f6-4479-8715-93f399943523",
+      "player_name": "Mithikayl",
+      "type": "queue_join",
+      "message": "Player transferred to queue server and added to queue",
+      "player_uuid": "853a8cf5-0937-4eb5-81c7-813ed2bb914a",
+      "timestamp": "2025-08-30T23:01:51.903978300Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.55,
+        "memory_used_gb": 1.0,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.04,
+        "system_cpu_percent": 38.58,
+        "memory_percent": 50.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:51.102960200Z"
+      },
+      "id": "5bc92a7a-34e6-42d9-87d8-b8a53752ea2b",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:51.104960300Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.52,
+        "memory_used_gb": 0.79,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.03,
+        "system_cpu_percent": 36.43,
+        "memory_percent": 39.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:50.798069900Z"
+      },
+      "id": "4d24dd25-ac86-4bce-a5ca-1c6a3a79967c",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:50.801067700Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.46,
+        "memory_used_gb": 0.99,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.01,
+        "system_cpu_percent": 28.66,
+        "memory_percent": 49.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:49.102655700Z"
+      },
+      "id": "babcbfe2-f639-47ad-8d23-daf5487e0caa",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:49.104659400Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.46,
+        "memory_used_gb": 0.77,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.01,
+        "system_cpu_percent": 31.83,
+        "memory_percent": 38.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:48.790631200Z"
+      },
+      "id": "a46c44dd-8cb4-444d-8467-1460fc8651cc",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:48.793632Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.46,
+        "memory_used_gb": 0.98,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.01,
+        "system_cpu_percent": 36.66,
+        "memory_percent": 49.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:47.106461400Z"
+      },
+      "id": "c7832d96-fb79-4cf8-973d-3a75b58325c9",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:47.110463700Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.43,
+        "memory_used_gb": 0.75,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.0,
+        "system_cpu_percent": 36.18,
+        "memory_percent": 37.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:46.790462400Z"
+      },
+      "id": "a68a73c2-a500-4476-8f29-5817b897d0f6",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:46.794462400Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.43,
+        "memory_used_gb": 0.97,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.0,
+        "system_cpu_percent": 33.94,
+        "memory_percent": 48.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:45.105753900Z"
+      },
+      "id": "7bb26841-873c-4e99-ab77-b66b3b19a819",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:45.108755200Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.37,
+        "memory_used_gb": 0.73,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.98,
+        "system_cpu_percent": 37.4,
+        "memory_percent": 36.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:44.788646500Z"
+      },
+      "id": "057ea7c1-2749-480b-91b1-726918571807",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:44.791650Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.52,
+        "memory_used_gb": 0.96,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.03,
+        "system_cpu_percent": 40.39,
+        "memory_percent": 48.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:43.106822200Z"
+      },
+      "id": "e4db46f6-ad5a-4041-be27-56ec846df73d",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:43.109822900Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.52,
+        "memory_used_gb": 0.71,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.03,
+        "system_cpu_percent": 38.04,
+        "memory_percent": 35.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:42.790562500Z"
+      },
+      "id": "f79d99d0-0d71-4328-a256-0cbb9ce0bf6d",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:42.792562500Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.46,
+        "memory_used_gb": 0.95,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 26.01,
+        "system_cpu_percent": 23.77,
+        "memory_percent": 47.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:41.113927Z"
+      },
+      "id": "0e36b847-62d0-43f7-b709-b7d0003e0d13",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:41.117926400Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.4,
+        "memory_used_gb": 0.68,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.99,
+        "system_cpu_percent": 21.29,
+        "memory_percent": 34.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:40.785879800Z"
+      },
+      "id": "9a196d95-aba4-4e8f-a542-fff89e5d9e50",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:40.788879900Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.3,
+        "memory_used_gb": 0.94,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.96,
+        "system_cpu_percent": 20.75,
+        "memory_percent": 47.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:39.100647500Z"
+      },
+      "id": "952f155f-789f-44cb-83bf-708441a083f8",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:39.103648400Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.3,
+        "memory_used_gb": 0.66,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.96,
+        "system_cpu_percent": 20.16,
+        "memory_percent": 33.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:38.787865600Z"
+      },
+      "id": "22d10d26-6a6b-4ca5-8f34-0fb050fccd55",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:38.790866200Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.21,
+        "memory_used_gb": 0.93,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.93,
+        "system_cpu_percent": 20.61,
+        "memory_percent": 46.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:37.097564900Z"
+      },
+      "id": "013d5764-427f-47a1-b929-32aa31703f4c",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:37.099564500Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.27,
+        "memory_used_gb": 0.64,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.95,
+        "system_cpu_percent": 20.08,
+        "memory_percent": 32.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:36.791940900Z"
+      },
+      "id": "83a3ef15-3787-4420-98f5-bd63eadac421",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:36.795860500Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.21,
+        "memory_used_gb": 0.93,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.93,
+        "system_cpu_percent": 27.34,
+        "memory_percent": 46.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:35.101514600Z"
+      },
+      "id": "3b0c9e82-585d-49f5-adb6-2c9958f222a1",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:35.103515400Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.11,
+        "memory_used_gb": 0.61,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.9,
+        "system_cpu_percent": 27.54,
+        "memory_percent": 30.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:34.794709900Z"
+      },
+      "id": "0ed27180-98d8-45f8-b833-96287cbb0c55",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:34.797709Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.18,
+        "memory_used_gb": 0.92,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.92,
+        "system_cpu_percent": 24.02,
+        "memory_percent": 46.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:33.097611900Z"
+      },
+      "id": "d0f224cc-6451-4183-9379-473b32805842",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:33.099612500Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "server_ip": "26.40.23.207",
+        "system_cpu_percent": 25.2,
+        "process_cpu_percent": 0.0,
+        "memory_percent": 29.5,
+        "tps": 20.0,
+        "retrieval_time": "2025-08-30T23:01:32.890566500Z"
+      },
+      "id": "ce9f451d-4db7-4617-9c3d-a9681267cddb",
+      "type": "metrics_collected",
+      "message": "Metrics retrieved for server",
+      "timestamp": "2025-08-30T23:01:32.890566500Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.21,
+        "memory_used_gb": 0.59,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.93,
+        "system_cpu_percent": 25.2,
+        "memory_percent": 29.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:32.785537300Z"
+      },
+      "id": "0d9b8fd4-e688-485b-a138-e18e656c7b24",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:32.787536600Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 81.11,
+        "memory_used_gb": 0.91,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.9,
+        "system_cpu_percent": 39.32,
+        "memory_percent": 45.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:31.105757400Z"
+      },
+      "id": "ab1af103-7694-4be9-99b2-f5ae568d613c",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:31.108758300Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 86.35,
+        "memory_used_gb": 0.56,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 27.57,
+        "system_cpu_percent": 38.82,
+        "memory_percent": 28.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:30.791866500Z"
+      },
+      "id": "516f00cc-2364-45fa-8a56-106aa5339d44",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:30.794868900Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 87.38,
+        "memory_used_gb": 0.9,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 27.9,
+        "system_cpu_percent": 26.09,
+        "memory_percent": 45.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:29.102753800Z"
+      },
+      "id": "9a5538c5-cb31-4a48-89b0-998ee78f2523",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:29.105753900Z"
+    },
+    {
+      "server_name": "26.40.23.207",
+      "metadata": {
+        "system_memory_percent": 87.38,
+        "memory_used_gb": 0.54,
+        "process_cpu_percent": 0.0,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 27.9,
+        "system_cpu_percent": 28.95,
+        "memory_percent": 27.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-08-30T23:01:28.794753Z"
+      },
+      "id": "41c9b69d-4a9f-485d-966c-620441e1e1d9",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-08-30T23:01:28.797752800Z"
+    }
+  ],
+  "timestamp": "2025-08-30T23:02:07.741016900Z"
+}

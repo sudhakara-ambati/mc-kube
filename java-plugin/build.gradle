@@ -21,6 +21,9 @@ dependencies {
     // Javalin core
     implementation 'io.javalin:javalin:6.1.3'
 
+    // MongoDB driver
+    implementation 'org.mongodb:mongodb-driver-sync:4.4.0'
+
     implementation platform("com.fasterxml.jackson:jackson-bom:2.12.4")
     implementation "com.fasterxml.jackson.core:jackson-core"
     implementation "com.fasterxml.jackson.core:jackson-databind"
@@ -65,11 +68,15 @@ def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
     task.expand props
 }
 
+def serverPluginsDir = project.findProperty('serverDir') ?: 'Y:/velocity serve test/plugins/'
+
 shadowJar {
     archiveClassifier.set('')
     relocate 'io.javalin', 'com.mckube.shaded.javalin'
     relocate 'io.javalin.http', 'com.mckube.shaded.javalin.http'
     relocate 'com.google.gson', 'com.mckube.shaded.gson'
+
+    destinationDirectory = file(serverPluginsDir)
 }
 
 sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })

@@ -307,6 +307,23 @@ public class LogsService {
         addEvent(LogType.ERROR, message, null, null, null, metadata);
     }
 
+    public void logServerOperation(String message, String playerName, String playerUuid, String serverName, Map<String, Object> metadata) {
+    // Determine the appropriate log type based on the message content
+    LogType logType = LogType.SYSTEM_EVENT; // Default
+    
+    if (message.contains("added")) {
+        logType = LogType.SERVER_ONLINE;
+    } else if (message.contains("removed")) {
+        logType = LogType.SERVER_OFFLINE;
+    } else if (message.contains("enabled")) {
+        logType = LogType.SERVER_ONLINE;
+    } else if (message.contains("disabled")) {
+        logType = LogType.SERVER_OFFLINE;
+    }
+    
+    addEvent(logType, message, playerName, playerUuid, serverName, metadata);
+}
+
     private void addEvent(LogType type, String message, String playerName, String playerUuid, String serverName, Map<String, Object> metadata) {
         lock.writeLock().lock();
         try {

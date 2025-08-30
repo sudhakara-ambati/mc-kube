@@ -1,25 +1,31 @@
-package com.mckube.spigot;
+package com.mckube.spigotplugin.services;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.time.Instant;
-
-// Import the extended MXBean interface
 import com.sun.management.OperatingSystemMXBean;
 
-public class MetricsService {
+import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
+import oshi.software.os.OSProcess;
+import oshi.software.os.OperatingSystem;
 
+public class MetricsService {
     private final JavaPlugin plugin;
     private final String serverIp;
     private final OperatingSystemMXBean osBean;
     private final RuntimeMXBean runtimeBean;
 
-    private long lastProcessCpuTime = -1L;     // ns
-    private long lastProcessUpTimeMs = -1L;    // ms
-    private final int availableProcessors = Runtime.getRuntime().availableProcessors();
+    private final SystemInfo systemInfo = new SystemInfo();
+    private final CentralProcessor processor = systemInfo.getHardware().getProcessor();
+    private final OperatingSystem os = systemInfo.getOperatingSystem();
+    private final int pid = os.getProcessId();
+
+    private long[] prevSystemTicks = processor.getSystemCpuLoadTicks();
+    private long prevProcessCpuTime = getProcessCpuTime();
+    private long prevSampleTime = System.nanoTime();
 
     public MetricsService(JavaPlugin plugin, String serverIp) {
         this.plugin = plugin;
@@ -29,7 +35,7 @@ public class MetricsService {
     }
 
     public MetricsData collectMetrics() {
-        double systemCpuPercent = getSystemCpuUsage(); // <--- FIXED
+        double systemCpuPercent = getSystemCpuUsage();
         double processCpuPercent = getProcessCpuUsage();
 
         long usedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -61,21 +67,30 @@ public class MetricsService {
         );
     }
 
-    // NEW: Get total system CPU usage as a percent
     public double getSystemCpuUsage() {
-        double val = osBean.getSystemCpuLoad();
-        if (val >= 0.0) {
-            return Math.round(val * 10000.0) / 100.0; // percent, 2 decimals
-        }
-        return 0.0;
+        long[] systemTicks = processor.getSystemCpuLoadTicks();
+        double systemCpuPercent = processor.getSystemCpuLoadBetweenTicks(prevSystemTicks) * 100.0;
+        prevSystemTicks = systemTicks;
+        return Math.round(systemCpuPercent * 100.0) / 100.0;
     }
 
     public double getProcessCpuUsage() {
-        double val = osBean.getProcessCpuLoad();
-        if (val >= 0.0) {
-            return Math.round(val * 10000.0) / 100.0; // percent, 2 decimals
+        long processCpuTime = getProcessCpuTime();
+        long now = System.nanoTime();
+        long elapsedNanos = now - prevSampleTime;
+        double processCpuPercent = 0.0;
+        if (elapsedNanos > 0) {
+            processCpuPercent = ((double)(processCpuTime - prevProcessCpuTime) / elapsedNanos) * 100.0 * processor.getLogicalProcessorCount();
         }
-        return 0.0;
+        prevProcessCpuTime = processCpuTime;
+        prevSampleTime = now;
+        return Math.round(processCpuPercent * 100.0) / 100.0;
+    }
+
+    private long getProcessCpuTime() {
+        OSProcess proc = os.getProcess(pid);
+        if (proc == null) return 0;
+        return proc.getKernelTime() + proc.getUserTime();
     }
 
     private double getSystemMemoryUsedGB() {

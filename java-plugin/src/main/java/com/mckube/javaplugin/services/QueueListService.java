@@ -120,6 +120,35 @@ public class QueueListService {
         logger.info("=== ServerPreConnectEvent: {} trying to connect to {} ===",
                 player.getUsername(), targetServer);
 
+        if (targetServer.equals(QUEUE_SERVER_NAME) && !contains(playerId)) {
+            boolean added = addToQueueIfAbsent(playerId);
+            if (added) {
+                logger.info("Player {} transferred to queue server and added to queue", player.getUsername());
+                if (logsService != null) {
+                    Map<String, Object> metadata = new HashMap<>();
+                    metadata.put("queue_position", getPlayerQueuePosition(playerId));
+                    metadata.put("queue_size", queueSet.size());
+                    metadata.put("ip_address", player.getRemoteAddress().getAddress().getHostAddress());
+                    logsService.logQueueJoin("Player transferred to queue server and added to queue",
+                            player.getUsername(),
+                            playerId.toString(),
+                            metadata);
+                }
+                int position = getPlayerQueuePosition(playerId);
+                player.sendMessage(Component.text("You have been added to the queue! Your position is " + position)
+                        .color(NamedTextColor.GOLD));
+                BossBar bossBar = BossBar.bossBar(
+                        Component.text("Queue Position: " + position).color(NamedTextColor.GOLD),
+                        1f,
+                        BossBar.Color.YELLOW,
+                        BossBar.Overlay.PROGRESS
+                );
+                playerBossBars.put(playerId, bossBar);
+                player.showBossBar(bossBar);
+                updateAllBossBars();
+            }
+        }
+
         if (!targetServer.equals(QUEUE_SERVER_NAME) && contains(playerId)) {
             if (logsService != null) {
                 Map<String, Object> metadata = new HashMap<>();
