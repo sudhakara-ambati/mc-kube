@@ -28,7 +28,7 @@ public class Spigot_plugin extends JavaPlugin {
             getLogger().warning("Unable to determine a unique server IP! Metrics may overwrite other servers. Set MCSERVER_IP env or server.properties 'server-ip'.");
         }
         metricsService = new MetricsService(this, serverIp);
-        getServer().getScheduler().runTaskTimerAsynchronously(this, this::postMetrics, 20 * 10, 20 * 10); // every 10 seconds
+        getServer().getScheduler().runTaskTimerAsynchronously(this, this::postMetrics, 20 * 2, 20 * 2); // every 2 seconds
         getLogger().info("Spigot_plugin enabled and posting metrics to " + velocityApiUrl + serverIp);
     }
 
@@ -57,8 +57,8 @@ public class Spigot_plugin extends JavaPlugin {
 
     private String serialize(MetricsService.MetricsData d) {
         return String.format(
-                "{\"serverIp\":\"%s\",\"timestamp\":\"%s\",\"cpuPercent\":%.2f,\"memoryUsedGB\":%.2f,\"memoryMaxGB\":%.2f,\"memoryPercent\":%.2f,\"systemMemoryUsedGB\":%.2f,\"systemMemoryTotalGB\":%.2f,\"systemMemoryPercent\":%.2f,\"tps\":%.2f,\"tpsPercent\":%.2f}",
-                d.serverIp(), d.timestamp(), d.cpuPercent(), d.memoryUsedGB(), d.memoryMaxGB(), d.memoryPercent(),
+                "{\"serverIp\":\"%s\",\"timestamp\":\"%s\",\"systemCpuPercent\":%.2f,\"processCpuPercent\":%.2f,\"memoryUsedGB\":%.2f,\"memoryMaxGB\":%.2f,\"memoryPercent\":%.2f,\"systemMemoryUsedGB\":%.2f,\"systemMemoryTotalGB\":%.2f,\"systemMemoryPercent\":%.2f,\"tps\":%.2f,\"tpsPercent\":%.2f}",
+                d.serverIp(), d.timestamp(), d.systemCpuPercent(), d.processCpuPercent(), d.memoryUsedGB(), d.memoryMaxGB(), d.memoryPercent(),
                 d.systemMemoryUsedGB(), d.systemMemoryTotalGB(), d.systemMemoryPercent(),
                 d.tps(), d.tpsPercent()
         );

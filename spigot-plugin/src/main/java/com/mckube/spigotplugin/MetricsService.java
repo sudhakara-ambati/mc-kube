@@ -2,9 +2,14 @@ package com.mckube.spigot;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+
 import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
+import java.time.Instant;
+
+// Import the extended MXBean interface
+import com.sun.management.OperatingSystemMXBean;
+
 public class MetricsService {
 
     private final JavaPlugin plugin;
@@ -12,15 +17,20 @@ public class MetricsService {
     private final OperatingSystemMXBean osBean;
     private final RuntimeMXBean runtimeBean;
 
+    private long lastProcessCpuTime = -1L;     // ns
+    private long lastProcessUpTimeMs = -1L;    // ms
+    private final int availableProcessors = Runtime.getRuntime().availableProcessors();
+
     public MetricsService(JavaPlugin plugin, String serverIp) {
         this.plugin = plugin;
         this.serverIp = serverIp;
-        this.osBean = ManagementFactory.getOperatingSystemMXBean();
+        this.osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         this.runtimeBean = ManagementFactory.getRuntimeMXBean();
     }
 
     public MetricsData collectMetrics() {
-        double cpuPercent = getProcessCpuLoad() * 100.0;
+        double systemCpuPercent = getSystemCpuUsage(); // <--- FIXED
+        double processCpuPercent = getProcessCpuUsage();
 
         long usedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long maxMem = Runtime.getRuntime().maxMemory();
@@ -37,8 +47,9 @@ public class MetricsService {
 
         return new MetricsData(
                 serverIp,
-                java.time.Instant.now().toString(),
-                cpuPercent,
+                Instant.now(),
+                systemCpuPercent,
+                processCpuPercent,
                 memoryUsedGB,
                 memoryMaxGB,
                 memoryPercent,
@@ -50,25 +61,27 @@ public class MetricsService {
         );
     }
 
-    private double getProcessCpuLoad() {
-        try {
-            var method = osBean.getClass().getMethod("getProcessCpuLoad");
-            method.setAccessible(true);
-            Object value = method.invoke(osBean);
-            if (value instanceof Double) {
-                double v = (Double) value;
-                return v < 0 ? 0 : v; // -1.0 if not available
-            }
-        } catch (Exception ignored) {}
+    // NEW: Get total system CPU usage as a percent
+    public double getSystemCpuUsage() {
+        double val = osBean.getSystemCpuLoad();
+        if (val >= 0.0) {
+            return Math.round(val * 10000.0) / 100.0; // percent, 2 decimals
+        }
+        return 0.0;
+    }
+
+    public double getProcessCpuUsage() {
+        double val = osBean.getProcessCpuLoad();
+        if (val >= 0.0) {
+            return Math.round(val * 10000.0) / 100.0; // percent, 2 decimals
+        }
         return 0.0;
     }
 
     private double getSystemMemoryUsedGB() {
         try {
-            var method = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
-            var freeMethod = osBean.getClass().getMethod("getFreePhysicalMemorySize");
-            long total = (long) method.invoke(osBean);
-            long free = (long) freeMethod.invoke(osBean);
+            long total = osBean.getTotalPhysicalMemorySize();
+            long free = osBean.getFreePhysicalMemorySize();
             return bytesToGB(total - free);
         } catch (Exception ignored) {}
         return 0.0;
@@ -76,8 +89,7 @@ public class MetricsService {
 
     private double getSystemMemoryTotalGB() {
         try {
-            var method = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
-            long total = (long) method.invoke(osBean);
+            long total = osBean.getTotalPhysicalMemorySize();
             return bytesToGB(total);
         } catch (Exception ignored) {}
         return 0.0;
@@ -98,8 +110,9 @@ public class MetricsService {
 
     public static record MetricsData(
             String serverIp,
-            String timestamp,
-            double cpuPercent,
+            Instant timestamp,
+            double systemCpuPercent,
+            double processCpuPercent,
             double memoryUsedGB,
             double memoryMaxGB,
             double memoryPercent,
