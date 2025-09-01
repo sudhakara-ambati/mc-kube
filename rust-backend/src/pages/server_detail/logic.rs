@@ -196,7 +196,7 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
     html! {
         <div class="server-detail-page">
             <div class="page-header">
-                <h1>{ format!("Server Details: {}", &server_info.servername) }</h1>
+                <h1>{ format!("Server Details: {}", &server_info.name) }</h1>
                 <div class="header-actions">
                     <button class="btn" onclick={restart_server}>{ "Restart" }</button>
                     <button class="btn" onclick={backup_server}>{ "Backup" }</button>

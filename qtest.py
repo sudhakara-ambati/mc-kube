@@ -50,11 +50,16 @@ logs()
 #     print(f"Status: {response.status_code}")
 #     print(f"Response: {response.json()}")
 
-ip = '26.40.23.207'
-local_ip = '127.0.0.1'
-req = requests.get(f"http://localhost:8080/metrics/{ip}")
-# get the process_cpu_percent and system_cpu_percent values from json
+# ip = '26.40.23.207'
+# local_ip = '127.0.0.1'
+# req = requests.get(f"http://localhost:8080/metrics/{ip}")
+# # get the process_cpu_percent and system_cpu_percent values from json
+# data = req.json()
+# print(data)
+# print(f"Process CPU Percent: {data['process_cpu_percent']}")
+# print(f"System CPU Percent: {data['system_cpu_percent']}")
+
+import requests
+req = requests.get("http://localhost:8080/server/list")
 data = req.json()
 print(data)
-print(f"Process CPU Percent: {data['process_cpu_percent']}")
-print(f"System CPU Percent: {data['system_cpu_percent']}")

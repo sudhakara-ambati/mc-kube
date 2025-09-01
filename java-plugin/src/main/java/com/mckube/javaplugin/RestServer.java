@@ -42,7 +42,15 @@ public class RestServer {
     }
 
     public void start(int port) {
-        app = Javalin.create(config -> config.http.defaultContentType = "application/json").start(port);
+        app = Javalin.create(config -> {
+            config.http.defaultContentType = "application/json";
+            config.bundledPlugins.enableCors(cors -> {
+                cors.addRule(it -> {
+                    it.anyHost();
+                    it.allowCredentials = false;
+                });
+            });
+        }).start(port);
 
         transferController.registerRoutes(app);
         serverController.registerRoutes(app);

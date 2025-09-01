@@ -1,0 +1,6 @@
+[serve]
+# Explicitly bind to localhost only to prevent serving on random hosts
+address = "127.0.0.1"
+port = 5000
+# Disable address lookup to prevent trunk from trying multiple addresses
+disable_address_lookup = true

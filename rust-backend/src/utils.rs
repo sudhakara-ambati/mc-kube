@@ -1,6 +1,7 @@
 use yew::prelude::*;
 use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
+use gloo_console::log;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ApiError {
@@ -34,44 +35,63 @@ pub fn api_post(url: &str, body: Option<&str>, callback: Callback<Result<String,
     let url = url.to_string();
     let body = body.map(|s| s.to_string());
 
+    log!("=== API_POST CALLED ===");
+    log!("URL:", url.clone());
+    log!("Body:", body.clone().unwrap_or("None".to_string()));
+
     spawn_local(async move {
-        let mut request_builder = Request::post(&url);
-        if let Some(_body_data) = &body {
-            request_builder = request_builder.header("Content-Type", "application/json");
-        }
-
-        let request = if let Some(body_data) = body {
-            request_builder.body(body_data)
+        let request_result = if let Some(body_data) = &body {
+            Request::post(&url)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .body(body_data)
         } else {
-            request_builder.body("")
+            Ok(Request::post(&url)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .build()
+                .unwrap())
         };
 
-        let built_request = match request {
-            Ok(req) => req,
-            Err(e) => {
-                callback.emit(Err(ApiError::Request(e.to_string())));
-                return;
-            }
-        };
-
-        match built_request.send().await {
-            Ok(resp) => {
-                if resp.ok() { // Check for 2xx status codes
-                    match resp.text().await {
-                        Ok(text) => callback.emit(Ok(text)),
-                        Err(e) => callback.emit(Err(ApiError::Parse(e.to_string()))),
+        match request_result {
+            Ok(request) => {
+                match request.send().await {
+                    Ok(resp) => {
+                        log!("Response status:", resp.status());
+                        log!("Response headers:", format!("{:?}", resp.headers()));
+                        if resp.ok() {
+                            match resp.text().await {
+                                Ok(text) => {
+                                    log!("Response text:", text.clone());
+                                    callback.emit(Ok(text));
+                                }
+                                Err(e) => {
+                                    log!("Error reading response text:", e.to_string());
+                                    callback.emit(Err(ApiError::Parse(format!("Failed to read response: {}", e))));
+                                }
+                            }
+                        } else {
+                            log!("HTTP Error status:", resp.status());
+                            match resp.text().await {
+                                Ok(error_text) => {
+                                    log!("Error response body:", error_text.clone());
+                                    callback.emit(Err(ApiError::Request(format!("HTTP Error: {} - {}", resp.status(), error_text))));
+                                }
+                                Err(_) => {
+                                    callback.emit(Err(ApiError::Request(format!("HTTP Error: {}", resp.status()))));
+                                }
+                            }
+                        }
                     }
-                } else {
-                    let status = resp.status();
-                    let status_text = resp.status_text();
-                    callback.emit(Err(ApiError::Network(format!(
-                        "HTTP Error: {} {}",
-                        status, status_text
-                    ))));
+                    Err(e) => {
+                        log!("Network error:", e.to_string());
+                        callback.emit(Err(ApiError::Network(format!("Network Error: {}", e))));
+                    }
                 }
             }
             Err(e) => {
-                callback.emit(Err(ApiError::Network(e.to_string())));
+                log!("Request build error:", e.to_string());
+                callback.emit(Err(ApiError::Request(format!("Failed to build request: {}", e))));
             }
         }
     });

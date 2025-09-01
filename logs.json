@@ -5,1028 +5,725 @@
   "message": "Cluster logs retrieved successfully",
   "events": [
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.98,
-        "memory_used_gb": 0.59,
-        "process_cpu_percent": 0.51,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.94,
-        "system_cpu_percent": 5.12,
-        "memory_percent": 29.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:20.354872900Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:53.005472500Z"
       },
-      "id": "a16a315b-2160-4e98-b6eb-f81b2df81a66",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:20.356873600Z"
+      "id": "e9e7b941-5049-46a7-8ef6-afe24acb0ac1",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:53.005472500Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 14.35,
-        "process_cpu_percent": 0.59,
-        "memory_percent": 29.5,
-        "tps": 20.0,
-        "retrieval_time": "2025-08-31T21:55:18.981808500Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:53.005472500Z"
       },
-      "id": "fbdff1a3-4ab2-465a-97e0-a97d9f274b35",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:55:18.981808500Z"
+      "id": "5f5e52e3-2c7d-4117-ac6d-48bf06a8c2ec",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:53.005472500Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "test",
       "metadata": {
-        "system_memory_percent": 74.98,
-        "memory_used_gb": 0.59,
-        "process_cpu_percent": 0.59,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.94,
-        "system_cpu_percent": 14.35,
-        "memory_percent": 29.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:18.391563500Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "a27e2f77-7821-407d-8680-426eccf78b86",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:18.394563400Z"
+      "id": "4880ef5a-484f-4a12-82cc-9c35da959d7d",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:47.997962800Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 8.7,
-        "process_cpu_percent": 0.6,
-        "memory_percent": 29.0,
-        "tps": 20.0,
-        "retrieval_time": "2025-08-31T21:55:17.888275500Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "df537f92-47c7-4d1b-b7bf-2c1ef1e2fb6e",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:55:17.888275500Z"
+      "id": "da9151ec-3a3b-46ed-aaf3-eea03f8b957c",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:47.997962800Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "queue",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 8.7,
-        "process_cpu_percent": 0.6,
-        "memory_percent": 29.0,
-        "tps": 20.0,
-        "retrieval_time": "2025-08-31T21:55:16.785474700Z"
+        "error_message": "io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: /127.0.0.1:30002",
+        "server_address": "/127.0.0.1:30002",
+        "check_time": "2025-09-01T23:29:47.996965500Z"
       },
-      "id": "887affcd-d589-4e0a-b317-e9c1a36556c7",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:55:16.785474700Z"
+      "id": "2e60f13c-33da-45ae-84fb-de4dab7406a5",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:47.996965500Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.95,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.6,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.93,
-        "system_cpu_percent": 8.7,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:16.388792900Z"
+        "server_names": [
+          "asd",
+          "test",
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "check_time": "2025-09-01T23:29:47.995963300Z"
       },
-      "id": "0985e664-7f43-4fab-b8ca-ce947e4b0b77",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:16.391793600Z"
+      "id": "6819e962-658c-4f6c-9e7a-a8795f246ee5",
+      "type": "server_status_check",
+      "message": "Server status check initiated for all servers",
+      "timestamp": "2025-09-01T23:29:47.995963300Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 10.99,
-        "process_cpu_percent": 0.5,
-        "memory_percent": 29.0,
-        "tps": 20.0,
-        "retrieval_time": "2025-08-31T21:55:15.638888900Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:41.541619600Z"
       },
-      "id": "20dd1716-79f3-4247-9112-9c30fba04684",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:55:15.638888900Z"
+      "id": "3d512bc3-31f9-420d-8aa8-bee39022bbf4",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:41.541619600Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 10.99,
-        "process_cpu_percent": 0.5,
-        "memory_percent": 29.0,
-        "tps": 20.0,
-        "retrieval_time": "2025-08-31T21:55:14.552271800Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:41.541619600Z"
       },
-      "id": "e6bb35d3-709b-492b-aaf7-4e5d10501825",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:55:14.553272Z"
+      "id": "dcd5ed8a-78d2-4afe-a64e-ebe3426695f6",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:41.541619600Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.98,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.5,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.94,
-        "system_cpu_percent": 10.99,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:14.374228300Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:40.342161600Z"
       },
-      "id": "bbd91bd9-204e-4666-8865-3aca83d0535f",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:14.377229400Z"
+      "id": "480996b5-b1c0-4e3f-a30e-18e14253c6d4",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:40.342161600Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 14.23,
-        "process_cpu_percent": 0.69,
-        "memory_percent": 29.0,
-        "tps": 20.0,
-        "retrieval_time": "2025-08-31T21:55:13.567097700Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:40.342161600Z"
       },
-      "id": "4cfd77e8-e8d7-4afd-b661-0d594f8b6589",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:55:13.567097700Z"
+      "id": "95912682-223e-4594-a7e5-4c72018eb6f0",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:40.342161600Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd",
       "metadata": {
-        "system_memory_percent": 74.85,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.69,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.9,
-        "system_cpu_percent": 14.23,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:12.404800800Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 3
       },
-      "id": "63de1302-0a10-418c-a264-b7ab3fd1bbd9",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:12.406801200Z"
+      "id": "b715f9b7-339f-44f3-84b5-2ab321b8316e",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:36.531989200Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "test",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 6.4,
-        "process_cpu_percent": 0.31,
-        "memory_percent": 29.0,
-        "tps": 20.0,
-        "retrieval_time": "2025-08-31T21:55:11.792763100Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "b46d59e1-a646-476b-a141-6bd50a6fe33c",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:55:11.792763100Z"
+      "id": "7cb5a8c7-9965-42d6-af8c-40dad010f2d9",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:36.531989200Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "queue",
       "metadata": {
-        "system_memory_percent": 74.85,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.31,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.9,
-        "system_cpu_percent": 6.4,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:10.342324200Z"
+        "error_message": "io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: /127.0.0.1:30002",
+        "server_address": "/127.0.0.1:30002",
+        "check_time": "2025-09-01T23:29:36.530988500Z"
       },
-      "id": "9ac04d74-0fdd-4494-8cd9-9252a18c6852",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:10.345324900Z"
+      "id": "579da30c-5671-490e-a0b3-0f507f58a288",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:36.530988500Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.85,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.31,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.9,
-        "system_cpu_percent": 7.33,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:08.352819400Z"
+        "server_names": [
+          "asd",
+          "test",
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "check_time": "2025-09-01T23:29:36.528989600Z"
       },
-      "id": "4d88c3c5-e64f-4445-8f81-4825ce6150b8",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:08.355821500Z"
+      "id": "b7d09142-d4ca-41d0-8b1a-72924c987fd8",
+      "type": "server_status_check",
+      "message": "Server status check initiated for all servers",
+      "timestamp": "2025-09-01T23:29:36.528989600Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.79,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.67,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.88,
-        "system_cpu_percent": 12.66,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:06.412272600Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:36.486988800Z"
       },
-      "id": "c32e4a91-2e6b-4a11-a764-83f5d9ac7546",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:06.416272200Z"
+      "id": "00fead05-60cb-4c6e-b302-7003656a494e",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:36.486988800Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "system_memory_percent": 74.82,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.5,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.89,
-        "system_cpu_percent": 12.74,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:04.377271100Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:36.486988800Z"
       },
-      "id": "3a992519-d3dd-4491-ad5e-42c2690bb637",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:04.379269500Z"
+      "id": "49d0e711-08e4-410e-b180-ca417f5d0bcd",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:36.486988800Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd",
       "metadata": {
-        "system_memory_percent": 74.82,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.58,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.89,
-        "system_cpu_percent": 17.75,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.0,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:02.394348900Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "73fc8692-7e4a-4022-bfe7-3e6716d8d852",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:02.398349900Z"
+      "id": "c85484df-af57-4b86-9b6f-d94da9e26ecc",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:35.339254300Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "test",
       "metadata": {
-        "system_memory_percent": 74.82,
-        "memory_used_gb": 0.58,
-        "process_cpu_percent": 0.61,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.89,
-        "system_cpu_percent": 6.68,
-        "memory_percent": 29.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:55:00.353825200Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "c4040fe9-80c0-4eac-8bcf-915aebcd7149",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:55:00.355824400Z"
+      "id": "29f7a17e-df62-4137-bb1b-f43a1e76a206",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:35.339254300Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "queue",
       "metadata": {
-        "system_memory_percent": 74.79,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.59,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.88,
-        "system_cpu_percent": 4.97,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:58.372269400Z"
+        "error_message": "io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: /127.0.0.1:30002",
+        "server_address": "/127.0.0.1:30002",
+        "check_time": "2025-09-01T23:29:35.338253400Z"
       },
-      "id": "e449c1b7-c84d-4b06-ae31-ff8acdb7e750",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:58.374267900Z"
+      "id": "3ac55b1c-335d-4170-af33-40094747114d",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:35.338253400Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.88,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.7,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.91,
-        "system_cpu_percent": 5.4,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:56.375768300Z"
+        "server_names": [
+          "asd",
+          "test",
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "check_time": "2025-09-01T23:29:35.337252800Z"
       },
-      "id": "b9416194-bb8f-4a88-be6b-d09e8a03a81d",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:56.378770100Z"
+      "id": "a2fca053-346d-47ab-83ca-ad778c0b78f8",
+      "type": "server_status_check",
+      "message": "Server status check initiated for all servers",
+      "timestamp": "2025-09-01T23:29:35.337252800Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.79,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 1.05,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.88,
-        "system_cpu_percent": 8.29,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:54.401160800Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:35.334253100Z"
       },
-      "id": "ebb41be8-658a-4c59-a863-25a61dfb9f12",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:54.404162Z"
+      "id": "e76ccdad-67fd-4e09-96b1-231f6132327e",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:35.334253100Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "system_memory_percent": 74.76,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.41,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.87,
-        "system_cpu_percent": 17.16,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:52.355269800Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:35.334253100Z"
       },
-      "id": "3a0f833c-54c3-45b8-940e-a07674217bb6",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:52.358271900Z"
+      "id": "3aee97df-ca17-48f5-8a93-403b682a23d6",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:35.334253100Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 13.14,
-        "process_cpu_percent": 0.58,
-        "memory_percent": 28.5,
-        "tps": 20.02,
-        "retrieval_time": "2025-08-31T21:54:51.742132Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:34.581157Z"
       },
-      "id": "15a9c681-19c6-45da-a9cc-9defb15ccf6f",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:54:51.742132Z"
+      "id": "80847bda-51e8-4494-aaa2-80601696f0c1",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:34.581157Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "system_memory_percent": 74.85,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.58,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.9,
-        "system_cpu_percent": 13.14,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:50.394108Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:34.581157Z"
       },
-      "id": "afd6dd61-a863-473a-9985-1bc200df2366",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:50.397107400Z"
+      "id": "85e224e7-9a77-48b3-aece-54384f22ba9f",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:34.581157Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.76,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.59,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.87,
-        "system_cpu_percent": 12.13,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:48.398980900Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:32.150067800Z"
       },
-      "id": "8064c267-f1f7-44cf-bbb5-1fb7c8c5ecc6",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:48.401981100Z"
+      "id": "c85e030d-ed44-4419-90ca-ef4d9d8d4062",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:32.150067800Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "system_memory_percent": 74.76,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.68,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.87,
-        "system_cpu_percent": 23.64,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:46.394068800Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:32.150067800Z"
       },
-      "id": "d76aada9-5b13-4f9e-b3da-27f2a8ac10a7",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:46.397068200Z"
+      "id": "adacf280-f4ef-4e86-93db-d7a139fe0331",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:32.150067800Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd",
       "metadata": {
-        "system_memory_percent": 74.79,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.6,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.88,
-        "system_cpu_percent": 9.22,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:44.387788Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "20ec5ae2-ee5b-4fa2-826c-68b8d76ae1cf",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:44.390781400Z"
+      "id": "d38bf2dc-d6f1-438a-ade6-d79d52906246",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:31.479423300Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "test",
       "metadata": {
-        "system_memory_percent": 74.82,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.51,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.89,
-        "system_cpu_percent": 10.52,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:42.353609900Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "07e213c6-841c-447d-93cf-c445f8005a67",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:42.355612Z"
+      "id": "78242509-5446-4dfc-bcfe-218f6e993d03",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:31.479423300Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "queue",
       "metadata": {
-        "system_memory_percent": 74.88,
-        "memory_used_gb": 0.57,
-        "process_cpu_percent": 0.79,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.91,
-        "system_cpu_percent": 7.75,
-        "memory_percent": 28.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:40.389804500Z"
+        "error_message": "io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: /127.0.0.1:30002",
+        "server_address": "/127.0.0.1:30002",
+        "check_time": "2025-09-01T23:29:31.478422400Z"
       },
-      "id": "38eb83cd-99ad-4aa6-944d-538ac78000d6",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:40.393805700Z"
+      "id": "faf1b8c1-756b-4f6e-bc8f-c0a623f4f6da",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:31.478422400Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 75.01,
-        "memory_used_gb": 0.56,
-        "process_cpu_percent": 0.41,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.95,
-        "system_cpu_percent": 13.76,
-        "memory_percent": 28.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:38.354835Z"
+        "server_names": [
+          "asd",
+          "test",
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "check_time": "2025-09-01T23:29:31.477421800Z"
       },
-      "id": "552ee667-8356-4b03-a737-29053b46403c",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:38.356837Z"
+      "id": "a2b0c184-8cb7-4dd6-8d4b-faf2e6b514b1",
+      "type": "server_status_check",
+      "message": "Server status check initiated for all servers",
+      "timestamp": "2025-09-01T23:29:31.477421800Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 11.73,
-        "process_cpu_percent": 0.6,
-        "memory_percent": 28.0,
-        "tps": 20.02,
-        "retrieval_time": "2025-08-31T21:54:36.418415400Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 3
       },
-      "id": "189c647e-4144-4ffa-a400-2f564dfbd457",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:54:36.418415400Z"
+      "id": "9395484e-4c87-4941-b89c-a89084de3758",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:30.322617500Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "test",
       "metadata": {
-        "system_memory_percent": 75.1,
-        "memory_used_gb": 0.56,
-        "process_cpu_percent": 0.6,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.98,
-        "system_cpu_percent": 11.73,
-        "memory_percent": 28.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:36.386179300Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "a323386e-5e5c-41e5-8af3-1d3ae5b82768",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:36.389181400Z"
+      "id": "272b6e15-f480-4490-8a49-60fd35bdddbf",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:30.322617500Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "queue",
       "metadata": {
-        "system_memory_percent": 75.13,
-        "memory_used_gb": 0.56,
-        "process_cpu_percent": 0.9,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.99,
-        "system_cpu_percent": 17.19,
-        "memory_percent": 28.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:34.402850600Z"
+        "error_message": "io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: /127.0.0.1:30002",
+        "server_address": "/127.0.0.1:30002",
+        "check_time": "2025-09-01T23:29:30.321617900Z"
       },
-      "id": "dd5c6b93-dbe5-44e1-ad5c-400da61191e3",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:34.405851400Z"
+      "id": "33523211-cc9d-4051-bb5a-11b9b3528e9e",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:30.321617900Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 75.04,
-        "memory_used_gb": 0.56,
-        "process_cpu_percent": 0.58,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.96,
-        "system_cpu_percent": 14.15,
-        "memory_percent": 28.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:32.393811400Z"
+        "server_names": [
+          "asd",
+          "test",
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "check_time": "2025-09-01T23:29:30.319617900Z"
       },
-      "id": "ea2b3042-66bf-4971-9d99-521144286c5d",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:32.397812400Z"
+      "id": "36da63b6-e422-41f3-8709-30c9d6e24a21",
+      "type": "server_status_check",
+      "message": "Server status check initiated for all servers",
+      "timestamp": "2025-09-01T23:29:30.319617900Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "test",
       "metadata": {
-        "system_memory_percent": 75.2,
-        "memory_used_gb": 0.56,
-        "process_cpu_percent": 0.79,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 24.01,
-        "system_cpu_percent": 12.27,
-        "memory_percent": 28.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:30.416381600Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "ff5e681f-4b27-43d4-8ad4-7856564d55a1",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:30.419381600Z"
+      "id": "a1d529e8-f5df-460c-860c-90b8cf922732",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:29.580007300Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd",
       "metadata": {
-        "system_memory_percent": 75.13,
-        "memory_used_gb": 0.56,
-        "process_cpu_percent": 0.88,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.99,
-        "system_cpu_percent": 11.83,
-        "memory_percent": 28.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:28.404849600Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "65fd8c75-b5e8-460f-9317-31048958387a",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:28.407850200Z"
+      "id": "1d143d9e-bea4-430f-9b23-25cc183212ae",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:29.580007300Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "queue",
       "metadata": {
-        "system_memory_percent": 75.2,
-        "memory_used_gb": 0.55,
-        "process_cpu_percent": 0.88,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 24.01,
-        "system_cpu_percent": 12.41,
-        "memory_percent": 27.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:26.426273800Z"
+        "error_message": "io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: /127.0.0.1:30002",
+        "server_address": "/127.0.0.1:30002",
+        "check_time": "2025-09-01T23:29:29.579008200Z"
       },
-      "id": "a7aa5908-b5c8-4b26-9c4c-94608ff86d16",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:26.428276300Z"
+      "id": "ae6d379d-5445-4813-82d4-d07ae2ecfcb9",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:29.579008200Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 75.01,
-        "memory_used_gb": 0.55,
-        "process_cpu_percent": 0.95,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.95,
-        "system_cpu_percent": 32.96,
-        "memory_percent": 27.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:24.448827600Z"
+        "server_names": [
+          "asd",
+          "test",
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "check_time": "2025-09-01T23:29:29.578007800Z"
       },
-      "id": "7b255f77-5de3-4640-afab-28341bc7794e",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:24.452826300Z"
+      "id": "8c9003a4-7c3e-4986-a28b-7e3627b0c32a",
+      "type": "server_status_check",
+      "message": "Server status check initiated for all servers",
+      "timestamp": "2025-09-01T23:29:29.578007800Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "test",
       "metadata": {
-        "system_memory_percent": 74.48,
-        "memory_used_gb": 0.55,
-        "process_cpu_percent": 0.31,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.78,
-        "system_cpu_percent": 12.09,
-        "memory_percent": 27.5,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:22.354623800Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "01869fdc-d9e9-45d6-a464-1411f77d8443",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:22.356624900Z"
+      "id": "50bf120f-0ab0-4f44-9886-be3a66c03dc5",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:27.138893Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd",
       "metadata": {
-        "system_memory_percent": 74.26,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 0.72,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.71,
-        "system_cpu_percent": 10.77,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:20.353323600Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "eb02ea5e-5629-441b-9cb1-c27045684ba8",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:20.356326200Z"
+      "id": "7b35401d-cd9c-42d9-936a-0bd81db7a7e0",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:27.138893Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "queue",
       "metadata": {
-        "system_memory_percent": 74.35,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 0.41,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.74,
-        "system_cpu_percent": 7.17,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:18.354062900Z"
+        "error_message": "io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: /127.0.0.1:30002",
+        "server_address": "/127.0.0.1:30002",
+        "check_time": "2025-09-01T23:29:27.136893700Z"
       },
-      "id": "b812c862-1cb9-4054-bf4f-0c6c14b08ae5",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:18.356063100Z"
+      "id": "3c2d74cf-e682-40a5-8d7a-6251d789aec8",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:27.136893700Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 74.35,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 0.21,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.74,
-        "system_cpu_percent": 9.24,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:16.336721700Z"
+        "server_names": [
+          "asd",
+          "test",
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "check_time": "2025-09-01T23:29:27.134893600Z"
       },
-      "id": "c4e72470-4bb7-4634-9db0-bd2774ae3103",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:16.338722800Z"
+      "id": "50bcd7ac-884b-472a-9627-22a5fbbc245b",
+      "type": "server_status_check",
+      "message": "Server status check initiated for all servers",
+      "timestamp": "2025-09-01T23:29:27.135893600Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 9.61,
-        "process_cpu_percent": 0.41,
-        "memory_percent": 27.0,
-        "tps": 20.02,
-        "retrieval_time": "2025-08-31T21:54:16.017623Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:23.333103200Z"
       },
-      "id": "819a4eb0-12bf-482c-8193-871df4603bb9",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:54:16.017623Z"
+      "id": "6d7aad2d-da2e-4ca8-829d-89107ec0b229",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:23.333103200Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "system_memory_percent": 74.73,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 0.41,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.86,
-        "system_cpu_percent": 9.61,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:14.345327300Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:23.333103200Z"
       },
-      "id": "13ccb030-7e72-4933-ae92-e70eb6fa4244",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:14.348327Z"
+      "id": "8eef73c5-097c-482a-a77e-15464c09d491",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:23.333103200Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd",
       "metadata": {
-        "system_memory_percent": 74.66,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 0.42,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.84,
-        "system_cpu_percent": 11.55,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:12.341316100Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 2
       },
-      "id": "35272203-fb89-476c-ab6f-d8dd56934977",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:12.344316600Z"
+      "id": "07101c85-35d7-4f6a-9f16-7e78b5ebfcfc",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:18.333818600Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "test",
       "metadata": {
-        "system_memory_percent": 75.1,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 1.01,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.98,
-        "system_cpu_percent": 36.22,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:10.393727400Z"
+        "max_players": 500,
+        "version": "Velocity 1.7.2-1.21.8",
+        "current_players": 0,
+        "latency_ms": 1
       },
-      "id": "0aee94d4-32aa-433d-8a20-d1daecd40bba",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:10.396728700Z"
+      "id": "2aa52a9f-1d49-4447-8fc1-c06a3c3908e4",
+      "type": "server_online",
+      "message": "Server is online and responding",
+      "timestamp": "2025-09-01T23:29:18.333818600Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "queue",
       "metadata": {
-        "system_memory_percent": 75.23,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 0.78,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 24.02,
-        "system_cpu_percent": 14.18,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:08.403925300Z"
+        "error_message": "io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: getsockopt: /127.0.0.1:30002",
+        "server_address": "/127.0.0.1:30002",
+        "check_time": "2025-09-01T23:29:18.331819500Z"
       },
-      "id": "8bf5abd2-15a3-446d-a052-373a96c23852",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:08.407925500Z"
+      "id": "e1a6323b-683d-429e-8cc1-89b19a5f709d",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:18.331819500Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "server_ip": "26.40.23.207",
-        "system_cpu_percent": 16.2,
-        "process_cpu_percent": 0.69,
-        "memory_percent": 27.0,
-        "tps": 20.02,
-        "retrieval_time": "2025-08-31T21:54:07.300596500Z"
+        "server_names": [
+          "asd",
+          "test",
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "check_time": "2025-09-01T23:29:18.330819400Z"
       },
-      "id": "4d1fb8b5-2cae-413a-a44a-bd3b76ce8b62",
-      "type": "metrics_collected",
-      "message": "Metrics retrieved for server",
-      "timestamp": "2025-08-31T21:54:07.300596500Z"
+      "id": "db1a7f46-db20-49ec-b891-ec2feb41d9fb",
+      "type": "server_status_check",
+      "message": "Server status check initiated for all servers",
+      "timestamp": "2025-09-01T23:29:18.330819400Z"
     },
     {
-      "server_name": "26.40.23.207",
       "metadata": {
-        "system_memory_percent": 75.2,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 0.69,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 24.01,
-        "system_cpu_percent": 16.2,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:06.391597200Z"
+        "offline_server_names": [
+          "asd123123",
+          "queue"
+        ],
+        "total_servers": 4,
+        "online_server_names": [
+          "asd",
+          "test"
+        ],
+        "offline_servers": 2,
+        "online_servers": 2,
+        "check_completed_time": "2025-09-01T23:29:18.289769700Z"
       },
-      "id": "12a4f825-5931-49b3-af7e-1d719dfcab2c",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:06.394596Z"
+      "id": "97ce1c1d-05ff-4554-8b29-38245b40b28a",
+      "type": "server_status_check",
+      "message": "Server status check completed",
+      "timestamp": "2025-09-01T23:29:18.289769700Z"
     },
     {
-      "server_name": "26.40.23.207",
+      "server_name": "asd123123",
       "metadata": {
-        "system_memory_percent": 75.07,
-        "memory_used_gb": 0.54,
-        "process_cpu_percent": 0.69,
-        "tps_percent": 100.0,
-        "memory_max_gb": 2.0,
-        "total_servers_tracked": 1,
-        "system_memory_used_gb": 23.97,
-        "system_cpu_percent": 13.8,
-        "memory_percent": 27.0,
-        "system_memory_total_gb": 31.93,
-        "tps": 20.02,
-        "server_ip": "26.40.23.207",
-        "collection_time": "2025-08-31T21:54:04.396497100Z"
+        "error_message": "io.netty.channel.ConnectTimeoutException: connection timed out after 5000 ms: /192.168.5.4:25565",
+        "server_address": "/192.168.5.4:25565",
+        "check_time": "2025-09-01T23:29:18.289769700Z"
       },
-      "id": "0fd728a2-0e8d-4d93-aa92-c61bc85d145d",
-      "type": "metrics_collected",
-      "message": "Metrics collected and stored for server",
-      "timestamp": "2025-08-31T21:54:04.399496400Z"
+      "id": "2433b3bf-5e9e-40a6-a308-eb9cd0eba651",
+      "type": "server_offline",
+      "message": "Server went offline or became unreachable",
+      "timestamp": "2025-09-01T23:29:18.289769700Z"
     }
   ],
-  "timestamp": "2025-08-31T21:55:20.823786700Z"
+  "timestamp": "2025-09-01T23:29:59.693520500Z"
 }
