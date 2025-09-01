@@ -1,0 +1,4 @@
+name: spigot-plugin
+version: '1.0-SNAPSHOT'
+main: com.mckube.spigotplugin.Spigot_plugin
+api-version: '1.21'
