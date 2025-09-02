@@ -43,7 +43,6 @@ pub fn servers() -> Html {
     let new_server_name = use_state(|| String::new());
     let new_server_ip = use_state(|| String::new());
     let new_server_port = use_state(|| String::new());
-    let new_server_max_players = use_state(|| String::new());
     let navigator = use_navigator().unwrap();
     let servers = use_state(Vec::new);
 
@@ -105,14 +104,12 @@ pub fn servers() -> Html {
         let new_server_name = new_server_name.clone();
         let new_server_ip = new_server_ip.clone();
         let new_server_port = new_server_port.clone();
-        let new_server_max_players = new_server_max_players.clone();
         Callback::from(move |_: MouseEvent| {
             show_add_modal.set(false);
             new_server_id.set(String::new());
             new_server_name.set(String::new());
             new_server_ip.set(String::new());
             new_server_port.set(String::new());
-            new_server_max_players.set(String::new());
         })
     };
 
@@ -123,7 +120,6 @@ pub fn servers() -> Html {
         let new_server_name = new_server_name.clone();
         let new_server_ip = new_server_ip.clone();
         let new_server_port = new_server_port.clone();
-        let new_server_max_players = new_server_max_players.clone();
         let fetch_servers = fetch_servers.clone();
 
         Callback::from(move |_: MouseEvent| {
@@ -132,11 +128,9 @@ pub fn servers() -> Html {
             log!("Name:", (*new_server_name).clone());
             log!("IP:", (*new_server_ip).clone());
             log!("Port:", (*new_server_port).clone());
-            log!("Max Players:", (*new_server_max_players).clone());
 
             let port: u16 = new_server_port.parse().unwrap_or(25565);
-            let max_players: u32 = new_server_max_players.parse().unwrap_or(50);
-
+            let max_players: u32 = 500;
             let server_data = format!(
                 r#"{{"name":"{}","ip":"{}","port":{},"maxPlayers":{}}}"#,
                 *new_server_id, *new_server_ip, port, max_players
@@ -169,7 +163,6 @@ pub fn servers() -> Html {
             new_server_name.set(String::new());
             new_server_ip.set(String::new());
             new_server_port.set(String::new());
-            new_server_max_players.set(String::new());
         })
     };
 
@@ -288,7 +281,7 @@ pub fn servers() -> Html {
                                         }}
                                     />
                                 </div>
-                                                                <div class="form-group">
+                                <div class="form-group">
                                     <label>{"Port"}</label>
                                     <input 
                                         type="text" 
@@ -299,21 +292,6 @@ pub fn servers() -> Html {
                                             Callback::from(move |e: InputEvent| {
                                                 let input: web_sys::HtmlInputElement = e.target_unchecked_into();
                                                 new_server_port.set(input.value());
-                                            })
-                                        }}
-                                    />
-                                </div>
-                                                                <div class="form-group">
-                                    <label>{"Max Players"}</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="e.g., 50" 
-                                        value={(*new_server_max_players).clone()}
-                                        oninput={{
-                                            let new_server_max_players = new_server_max_players.clone();
-                                            Callback::from(move |e: InputEvent| {
-                                                let input: web_sys::HtmlInputElement = e.target_unchecked_into();
-                                                new_server_max_players.set(input.value());
                                             })
                                         }}
                                     />
