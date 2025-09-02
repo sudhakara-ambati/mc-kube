@@ -1,11 +1,13 @@
 use yew::{function_component, html, Html, use_state, use_effect_with, Callback, MouseEvent, Properties};
+use yew_router::prelude::*;
 use crate::utils::{api_get, api_post, ApiError};
+use crate::Route;
 use wasm_bindgen_futures::spawn_local;
 use gloo_net::http::Request;
 use serde::Deserialize;
 use gloo_console::log;
 use gloo_timers::callback::Interval;
-use crate::pages::servers::logic::ServerInfo;
+use crate::pages::servers::logic::{ServerInfo};
 
 #[derive(Properties, PartialEq)]
 pub struct ServerDetailProps {
@@ -45,14 +47,15 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
     let logs = use_state(|| String::from("[14:23:45] [INFO] Player Steve joined the game\n[14:24:12] [INFO] Player Alex left the game\n[14:24:58] [WARN] Can't keep up! Running 2043ms behind\n[14:25:33] [INFO] Saving chunks for level 'ServerLevel[world]'\n[14:26:15] [INFO] Player Bob joined the game"));
     let players = use_state(|| String::from("Online Players (8/20):\n• Steve - 45 mins\n• Alex - 1h 23 mins\n• Bob - 12 mins\n• Charlie - 2h 15 mins\n• Diana - 38 mins\n• Eve - 1h 7 mins\n• Frank - 26 mins\n• Grace - 3h 2 mins"));
     let response = use_state(|| String::new());
+    let show_delete_modal = use_state(|| false);
+    let navigator = use_navigator().unwrap();
 
-    // Fetch server info once to get the IP address
     {
         let server_info = server_info.clone();
         let server_id = props.server_id.clone();
         use_effect_with(server_id, move |server_id| {
             let server_info = server_info.clone();
-            let server_id = server_id.clone(); // Create an owned String from the reference
+            let server_id = server_id.clone();
             spawn_local(async move {
                 let request_url = format!("/api/servers/{}", server_id);
                 match Request::get(&request_url).send().await {
@@ -69,10 +72,9 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
         });
     }
 
-    // Set up the metrics polling interval, which depends on server_info
     {
         let metrics = metrics.clone();
-        use_effect_with(server_info.clone(), move |server_info| { // Clone the state handle
+        use_effect_with(server_info.clone(), move |server_info| {
             let server_ip = server_info.serverip.clone();
             let is_ip_loaded = !server_ip.is_empty();
 
@@ -92,16 +94,13 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
                     });
                 };
 
-                // Fetch immediately
                 fetch_metrics();
-                // Then fetch every 2 seconds
                 Some(Interval::new(2000, fetch_metrics))
             } else {
                 None
             };
 
             move || {
-                // When the component unmounts or server_info changes, the interval is dropped
                 drop(interval);
             }
         });
@@ -129,32 +128,50 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
         })
     };
 
-    let restart_server = {
-        let response = response.clone();
-        let server_id = props.server_id.clone();
+    let show_delete_confirmation = {
+        let show_delete_modal = show_delete_modal.clone();
         Callback::from(move |_: MouseEvent| {
-            api_post(&format!("http://localhost:8080/servers/{}/restart", server_id), None, {
-                let response = response.clone();
-                Callback::from(move |result: Result<String, ApiError>| {
-                    match result {
-                        Ok(data) => response.set(format!("Success: {}", data)),
-                        Err(e) => response.set(format!("Error: {}", e)),
-                    }
-                })
-            });
+            show_delete_modal.set(true);
         })
     };
 
-    let backup_server = {
+    let close_delete_modal = {
+        let show_delete_modal = show_delete_modal.clone();
+        Callback::from(move |_: MouseEvent| {
+            show_delete_modal.set(false);
+        })
+    };
+
+    let confirm_delete = {
         let response = response.clone();
         let server_id = props.server_id.clone();
+        let show_delete_modal = show_delete_modal.clone();
+        let navigator = navigator.clone();
         Callback::from(move |_: MouseEvent| {
-            api_post(&format!("http://localhost:8080/servers/{}/backup", server_id), None, {
+            let server_data = format!(
+                r#"{{"name":"{}"}}"#,
+                server_id
+            );
+
+            api_post("http://127.0.0.1:8080/server/remove", Some(&server_data), {
                 let response = response.clone();
+                let show_delete_modal = show_delete_modal.clone();
+                let navigator = navigator.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
+                    log!("API Response received:", format!("{:?}", result));
                     match result {
-                        Ok(data) => response.set(format!("Success: {}", data)),
-                        Err(e) => response.set(format!("Error: {}", e)),
+                        Ok(data) => {
+                            log!("Success response:", data.clone());
+                            response.set(format!("Server deleted successfully: {}", data));
+                            show_delete_modal.set(false);
+                            navigator.push(&Route::Servers);
+                        }
+                        Err(e) => {
+                            log!("Error response:", format!("{:?}", e));
+                            log!("Error string:", e.to_string());
+                            response.set(format!("Error deleting server: {}", e));
+                            show_delete_modal.set(false);
+                        }
                     }
                 })
             });
@@ -198,8 +215,10 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
             <div class="page-header">
                 <h1>{ format!("Server Details: {}", &server_info.name) }</h1>
                 <div class="header-actions">
-                    <button class="btn" onclick={restart_server}>{ "Restart" }</button>
-                    <button class="btn" onclick={backup_server}>{ "Backup" }</button>
+                    <button class="btn btn-danger" onclick={show_delete_confirmation}>
+                        <span class="btn-icon">{ "🗑️" }</span>
+                        { "Delete Server" }
+                    </button>
                 </div>
             </div>
 
@@ -273,6 +292,52 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
                     </div>
                 </div>
             </div>
+                        {if *show_delete_modal {
+                html! {
+                    <div class="modal-overlay" onclick={close_delete_modal.clone()}>
+                        <div class="modal-content delete-modal" onclick={Callback::from(|e: MouseEvent| e.stop_propagation())}>
+                            <div class="modal-header">
+                                <h3>{ "⚠️ Confirm Server Deletion" }</h3>
+                                <button class="modal-close" onclick={close_delete_modal.clone()}>{"×"}</button>
+                            </div>
+                            <div class="modal-body">
+                                <p class="warning-text">
+                                    { "Are you sure you want to delete this server?" }
+                                </p>
+                                <p class="server-info">
+                                    <strong>{ "Server: " }</strong>
+                                    <span class="server-name">{ &server_info.name }</span>
+                                </p>
+                                <p class="warning-subtext">
+                                    { "This action cannot be undone. The server will be permanently removed from your network." }
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" onclick={close_delete_modal}>{"Cancel"}</button>
+                                <button class="btn btn-danger-confirm" onclick={confirm_delete}>
+                                    <span class="btn-icon">{ "🗑️" }</span>
+                                    { "Yes, Delete Server" }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            } else {
+                html! {}
+            }}
+
+            {if !response.is_empty() {
+                html! {
+                    <div class="response-toast">
+                        <div class="toast-content">
+                            <h4>{"Server Action"}</h4>
+                            <p>{(*response).clone()}</p>
+                        </div>
+                    </div>
+                }
+            } else {
+                html! {}
+            }}
         </div>
     }
 }
