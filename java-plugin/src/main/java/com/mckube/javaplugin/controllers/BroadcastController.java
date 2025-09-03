@@ -29,15 +29,13 @@ public class BroadcastController {
         CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
                 JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
-                if (jsonObject == null) return null; // Error already set in context
+                if (jsonObject == null) return null;
 
                 String message = ControllerUtils.extractMessage(ctx, jsonObject);
-                if (message == null) return null; // Error already set in context
+                if (message == null) return null;
 
-                // Broadcast the message to all players
                 broadcastService.broadcastMessage(message);
 
-                // Create success response
                 Map<String, Object> response = ControllerUtils.createSuccessResponse("Message broadcasted successfully to all players");
                 response.put("broadcastMessage", message);
 
@@ -63,21 +61,18 @@ public class BroadcastController {
 
         CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
-                // Validate server name
                 if (!ControllerUtils.validatePathParam(ctx, serverName, "Server name")) {
-                    return null; // Error already set in context
+                    return null;
                 }
 
                 JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
-                if (jsonObject == null) return null; // Error already set in context
+                if (jsonObject == null) return null;
 
                 String message = ControllerUtils.extractMessage(ctx, jsonObject);
-                if (message == null) return null; // Error already set in context
+                if (message == null) return null; 
 
-                // Broadcast the message to specific server
                 broadcastService.broadcastMessageToServer(serverName, message);
 
-                // Create success response
                 Map<String, Object> response = ControllerUtils.createSuccessResponse("Message broadcasted successfully to server: " + serverName);
                 response.put("targetServer", serverName);
                 response.put("broadcastMessage", message);

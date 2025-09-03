@@ -1,4 +1,3 @@
-/* High-Performance, Beautiful CSS for Minecraft Server Manager */
 
 /* Reset and base styles */
 * {
@@ -165,6 +164,21 @@ body {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--accent-primary);
+}
+
+.server-card.disabled {
+    opacity: 0.6;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    border-color: #d1d5db;
+}
+
+.server-card.disabled .server-name {
+    color: #6b7280;
+}
+
+.server-card.disabled .server-status {
+    background: #9ca3af;
+    color: white;
 }
 
 .server-header {

@@ -84,7 +84,6 @@ public class MetricsService {
                 if (logsService != null) {
                     Map<String, Object> metadata = new HashMap<>();
                     metadata.put("server_ip", serverIp);
-                    //metadata.put("data_age_seconds", Instant.now().getEpochSecond() - data.timestamp());
                     metadata.put("system_cpu_percent", data.systemCpuPercent());
                     metadata.put("process_cpu_percent", data.processCpuPercent());
                     metadata.put("memory_percent", data.memoryPercent());

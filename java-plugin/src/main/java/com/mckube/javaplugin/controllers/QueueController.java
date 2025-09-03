@@ -28,8 +28,7 @@ public class QueueController {
     private void getQueueList(Context ctx) {
         try {
             String type = ctx.queryParam("type");
-
-            // Default to usernames if no type specified
+            
             if (type == null || type.trim().isEmpty()) {
                 type = "username";
             }
@@ -78,11 +77,11 @@ public class QueueController {
     private void removePlayer(Context ctx) {
         try {
             JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
-            if (jsonObject == null) return; // Error already set in context
+            if (jsonObject == null) return; 
 
-            // Validate type field
+            
             String type = ControllerUtils.validateJsonField(ctx, jsonObject, "type", "Type");
-            if (type == null) return; // Error already set in context
+            if (type == null) return; 
 
             boolean success;
             String identifier;
@@ -90,13 +89,13 @@ public class QueueController {
             switch (type.toLowerCase()) {
                 case "username":
                     identifier = ControllerUtils.validateJsonField(ctx, jsonObject, "player", "Player name");
-                    if (identifier == null) return; // Error already set in context
+                    if (identifier == null) return; 
                     success = queueListService.removePlayerFromQueueName(identifier);
                     break;
 
                 case "uuid":
                     identifier = ControllerUtils.validateJsonField(ctx, jsonObject, "uuid", "UUID");
-                    if (identifier == null) return; // Error already set in context
+                    if (identifier == null) return; 
 
                     try {
                         UUID uuid = UUID.fromString(identifier);

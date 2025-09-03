@@ -28,7 +28,6 @@ public class TransferService {
         Optional<Player> playerOptional = server.getPlayer(playerName);
         Optional<RegisteredServer> targetServer = server.getServer(serverName);
 
-        // Check if player exists
         if (playerOptional.isEmpty()) {
             if (logsService != null) {
                 Map<String, Object> metadata = new HashMap<>();
@@ -45,7 +44,6 @@ public class TransferService {
             return false;
         }
 
-        // Check if target server exists
         if (targetServer.isEmpty()) {
             if (logsService != null) {
                 Map<String, Object> metadata = new HashMap<>();
@@ -67,7 +65,6 @@ public class TransferService {
                 .map(s -> s.getServerInfo().getName())
                 .orElse("none");
 
-        // Log transfer initiation
         if (logsService != null) {
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("from_server", currentServer);
@@ -81,11 +78,9 @@ public class TransferService {
                     metadata);
         }
 
-        // Perform the transfer
         player.createConnectionRequest(targetServer.get()).fireAndForget();
         logger.info("Transferred {} to {}", playerName, serverName);
 
-        // Log successful transfer initiation
         if (logsService != null) {
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("from_server", currentServer);
