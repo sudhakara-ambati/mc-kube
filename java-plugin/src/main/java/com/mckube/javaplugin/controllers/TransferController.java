@@ -28,7 +28,7 @@ public class TransferController {
         CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
                 TransferRequest request = parseAndValidateRequest(ctx);
-                if (request == null) return null; // Error already set in context
+                if (request == null) return null; 
 
                 boolean success = transferService.transferPlayer(request.playerName, request.serverName);
                 Map<String, Object> response = createTransferResponse(success, request.playerName, request.serverName);
@@ -51,14 +51,14 @@ public class TransferController {
 
     private TransferRequest parseAndValidateRequest(Context ctx) {
         JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
-        if (jsonObject == null) return null; // Error already set in context
+        if (jsonObject == null) return null; 
 
-        // Extract and validate fields using the utils
+        
         String playerName = ControllerUtils.validateJsonField(ctx, jsonObject, "player", "Player name");
-        if (playerName == null) return null; // Error already set in context
+        if (playerName == null) return null; 
 
         String serverName = ControllerUtils.validateJsonField(ctx, jsonObject, "server", "Server name");
-        if (serverName == null) return null; // Error already set in context
+        if (serverName == null) return null; 
 
         return new TransferRequest(playerName, serverName);
     }

@@ -82,7 +82,7 @@ public class ServerManagementService {
         long startTime = System.currentTimeMillis();
         
         try {
-            // Check if server already exists
+            
             Document existing = serverCollection.find(Filters.eq("name", name)).first();
             if (existing != null) {
                 logger.warn("Attempted to add server that already exists: {}", name);
@@ -100,7 +100,7 @@ public class ServerManagementService {
                 return false;
             }
 
-            // Create new server document
+            
             Document serverDoc = new Document()
                     .append("name", name)
                     .append("ip", ip)
@@ -112,7 +112,7 @@ public class ServerManagementService {
 
             serverCollection.insertOne(serverDoc);
 
-            // Register with Velocity
+            
             ServerInfo info = new ServerInfo(name, new InetSocketAddress(ip, port));
             proxyServer.registerServer(info);
 
@@ -158,7 +158,7 @@ public class ServerManagementService {
     long startTime = System.currentTimeMillis();
     
     try {
-        // Check if server exists
+        
         Document existing = serverCollection.find(Filters.eq("name", name)).first();
         if (existing == null) {
             logger.warn("Attempted to remove server that doesn't exist: {}", name);
@@ -174,16 +174,16 @@ public class ServerManagementService {
             return false;
         }
 
-        // Store server details for logging
+        
         String serverIp = existing.getString("ip");
         Integer serverPort = existing.getInteger("port");
         String createdBy = existing.getString("createdBy");
         String createdAt = existing.getString("createdAt");
 
-        // Kick all players from the server before removing it
+        
         int kickedPlayers = kickAllPlayersFromServer(name, "Server is being removed");
 
-        // Remove from Velocity first
+        
         try {
             var server = proxyServer.getServer(name);
             if (server.isPresent()) {
@@ -193,7 +193,7 @@ public class ServerManagementService {
             logger.warn("Error unregistering server from Velocity: {}", name, velocityException);
         }
 
-        // Remove from MongoDB
+        
         serverCollection.deleteOne(Filters.eq("name", name));
 
         long operationTime = System.currentTimeMillis() - startTime;
@@ -251,7 +251,7 @@ public class ServerManagementService {
                 return false;
             }
 
-            // Check if already enabled
+            
             Boolean currentlyEnabled = existing.getBoolean("enabled");
             if (Boolean.TRUE.equals(currentlyEnabled)) {
                 logger.info("Server {} is already enabled", name);
@@ -267,7 +267,7 @@ public class ServerManagementService {
                 return true;
             }
 
-            // Update MongoDB
+            
             serverCollection.updateOne(
                     Filters.eq("name", name),
                     Updates.combine(
@@ -277,7 +277,7 @@ public class ServerManagementService {
                     )
             );
 
-            // Register with Velocity
+            
             String ip = existing.getString("ip");
             int port = existing.getInteger("port");
             ServerInfo info = new ServerInfo(name, new InetSocketAddress(ip, port));
@@ -337,7 +337,7 @@ public class ServerManagementService {
             return false;
         }
 
-        // Check if already disabled
+        
         Boolean currentlyEnabled = existing.getBoolean("enabled");
         if (Boolean.FALSE.equals(currentlyEnabled)) {
             logger.info("Server {} is already disabled", name);
@@ -356,10 +356,10 @@ public class ServerManagementService {
         String ip = existing.getString("ip");
         Integer port = existing.getInteger("port");
 
-        // Kick all players from the server before disabling it
+        
         int kickedPlayers = kickAllPlayersFromServer(name, "Server is being disabled");
 
-        // Update MongoDB
+        
         serverCollection.updateOne(
                 Filters.eq("name", name),
                 Updates.combine(
@@ -369,7 +369,7 @@ public class ServerManagementService {
                 )
         );
 
-        // Unregister from Velocity
+        
         try {
             var server = proxyServer.getServer(name);
             if (server.isPresent()) {
@@ -462,12 +462,10 @@ public class ServerManagementService {
         return servers;
     }
 
-    /**
- * Kicks all players from a specific server
- * @param serverName The name of the server to kick players from
- * @param reason The reason message to show players
- * @return The number of players kicked
- */
+@param serverName
+@param reason
+@return
+
 private int kickAllPlayersFromServer(String serverName, String reason) {
     try {
         var serverOptional = proxyServer.getServer(serverName);
@@ -483,25 +481,22 @@ private int kickAllPlayersFromServer(String serverName, String reason) {
             logger.debug("No players on server '{}' to kick", serverName);
             return 0;
         }
-
-        // Create kick message
+        
         Component kickMessage = Component.text(reason, net.kyori.adventure.text.format.NamedTextColor.RED);
         
         int kickedCount = 0;
         for (var player : playersOnServer) {
             try {
-                // Try to move player to a lobby server first, if available
                 boolean movedToLobby = movePlayerToLobby(player, kickMessage);
                 
                 if (!movedToLobby) {
-                    // If no lobby available, disconnect the player
+                    
                     player.disconnect(kickMessage);
                 }
                 
                 kickedCount++;
                 logger.debug("Kicked player '{}' from server '{}'", player.getUsername(), serverName);
                 
-                // Log individual player kick
                 if (logsService != null) {
                     Map<String, Object> metadata = new HashMap<>();
                     metadata.put("reason", reason);
@@ -512,8 +507,7 @@ private int kickAllPlayersFromServer(String serverName, String reason) {
                             player.getUniqueId().toString(), 
                             serverName, 
                             metadata);
-                }
-                
+                } 
             } catch (Exception playerException) {
                 logger.warn("Failed to kick player '{}' from server '{}': {}", 
                         player.getUsername(), serverName, playerException.getMessage());
@@ -529,31 +523,28 @@ private int kickAllPlayersFromServer(String serverName, String reason) {
     }
 }
 
-/**
- * Attempts to move a player to a lobby server instead of disconnecting them
- * @param player The player to move
- * @param kickMessage The message to show if move fails
- * @return true if successfully moved to lobby, false otherwise
- */
+@param player
+@param kickMessage
+@return
+
 private boolean movePlayerToLobby(com.velocitypowered.api.proxy.Player player, Component kickMessage) {
     try {
-        // Common lobby server names to try
+        
         String[] lobbyNames = {"queue"};
         
         for (String lobbyName : lobbyNames) {
             var lobbyServer = proxyServer.getServer(lobbyName);
             if (lobbyServer.isPresent()) {
-                // Try to connect player to lobby
+                
                 player.createConnectionRequest(lobbyServer.get()).fireAndForget();
                 logger.debug("Moved player '{}' to lobby server '{}'", player.getUsername(), lobbyName);
                 return true;
             }
         }
         
-        // If no lobby found, try to find any other available server
         var availableServers = proxyServer.getAllServers();
         for (var server : availableServers) {
-            // Don't move to the same server they're being kicked from
+            
             if (!server.getServerInfo().getName().equals(player.getCurrentServer().map(s -> s.getServerInfo().getName()).orElse(""))) {
                 player.createConnectionRequest(server).fireAndForget();
                 logger.debug("Moved player '{}' to available server '{}'", player.getUsername(), server.getServerInfo().getName());

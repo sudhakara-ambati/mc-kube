@@ -29,13 +29,12 @@ public class LogsController {
 
     private void getClusterLogs(Context ctx) {
         try {
-            // Parse query parameters
+            
             int limit = parseIntParam(ctx, "limit", 50, 1, 500);
             String typeParam = ctx.queryParam("type");
             String playerParam = ctx.queryParam("player");
             String sinceParam = ctx.queryParam("since");
 
-            // Parse type filter
             LogsService.LogType filterType = null;
             if (typeParam != null && !typeParam.trim().isEmpty()) {
                 try {
@@ -46,8 +45,7 @@ public class LogsController {
                     return;
                 }
             }
-
-            // Parse since timestamp
+            
             Instant since = null;
             if (sinceParam != null && !sinceParam.trim().isEmpty()) {
                 try {
@@ -58,17 +56,14 @@ public class LogsController {
                     return;
                 }
             }
-
-            // Get filtered events
+            
             List<Map<String, Object>> events = logsService.getRecentEvents(limit, filterType, playerParam, since);
-
-            // Build response
+            
             Map<String, Object> response = ControllerUtils.createSuccessResponse("Cluster logs retrieved successfully");
             response.put("events", events);
             response.put("count", events.size());
             response.put("limit", limit);
-
-            // Add filter information
+            
             if (filterType != null) {
                 response.put("filter_type", filterType.name().toLowerCase());
             }

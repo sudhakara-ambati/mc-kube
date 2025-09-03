@@ -100,8 +100,7 @@ public class ServerController {
 
                         ServerListService.ServerStatus server = serverOpt.get();
                         Map<String, Object> response = ControllerUtils.createSuccessResponse("Server details retrieved successfully");
-
-                        // Add all server details
+                        
                         response.put("name", server.getName());
                         response.put("host", server.getHost());
                         response.put("port", server.getPort());

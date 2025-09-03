@@ -30,8 +30,7 @@ public class ServerListService {
 
     public CompletableFuture<List<ServerStatus>> getAllServersWithStatus() {
         List<CompletableFuture<ServerStatus>> futures = new ArrayList<>();
-
-        // Log server status check initiation
+        
         if (logsService != null) {
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("total_servers", server.getAllServers().size());
@@ -53,7 +52,7 @@ public class ServerListService {
                             .map(CompletableFuture::join)
                             .toList();
 
-                    // Log server status check completion
+                    
                     if (logsService != null) {
                         long onlineServers = results.stream().filter(s -> "online".equals(s.getStatus())).count();
                         long offlineServers = results.size() - onlineServers;
@@ -152,7 +151,7 @@ public class ServerListService {
                             motd
                     );
 
-                    // Log if server has high latency
+                    
                     if (logsService != null && latency > 1000) {
                         Map<String, Object> metadata = new HashMap<>();
                         metadata.put("latency_ms", latency);
@@ -164,7 +163,7 @@ public class ServerListService {
                                 metadata);
                     }
 
-                    // Log server came online
+                    
                     if (logsService != null) {
                         Map<String, Object> metadata = new HashMap<>();
                         metadata.put("latency_ms", latency);
@@ -182,7 +181,7 @@ public class ServerListService {
                     logger.debug("Server {} is offline or unreachable: {}",
                             serverInfo.getName(), throwable.getMessage());
 
-                    // Log server offline
+                    
                     if (logsService != null) {
                         Map<String, Object> metadata = new HashMap<>();
                         metadata.put("error_message", throwable.getMessage());
@@ -206,8 +205,7 @@ public class ServerListService {
                     );
                 });
     }
-
-    // Keep your existing BasicServerInfo and ServerStatus classes unchanged
+    
     public static class BasicServerInfo {
         private final String name;
         private final String host;
@@ -256,8 +254,7 @@ public class ServerListService {
             this.motd = motd;
             this.timestamp = java.time.Instant.now().toString();
         }
-
-        // All your existing getters and methods remain the same
+        
         public String getName() { return name; }
         public String getHost() { return host; }
         public int getPort() { return port; }

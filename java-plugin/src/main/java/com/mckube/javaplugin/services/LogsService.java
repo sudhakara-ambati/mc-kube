@@ -19,61 +19,51 @@ public class LogsService {
 
     private final ProxyServer server;
     private final Logger logger;
-
-    // Thread-safe deque to store recent events
+    
     private final Deque<LogEntry> recentEvents = new ConcurrentLinkedDeque<>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
-    // Configuration
-    private static final int MAX_EVENTS = 1000; // Maximum number of events to keep
-    private static final int DEFAULT_LIMIT = 50; // Default number of events to return
+    
+    private static final int MAX_EVENTS = 1000; 
+    private static final int DEFAULT_LIMIT = 50; 
 
     public enum LogType {
-        // Player Events
+        
         PLAYER_JOIN,
         PLAYER_LEAVE,
         PLAYER_RECONNECT,
-
-        // Server Events
+        
         SERVER_CONNECT,
         SERVER_DISCONNECT,
         SERVER_OFFLINE,
         SERVER_ONLINE,
         SERVER_HIGH_LATENCY,
         SERVER_STATUS_CHECK,
-
-        // Queue Events
+        
         QUEUE_JOIN,
         QUEUE_LEAVE,
         QUEUE_REMOVE_ADMIN,
         QUEUE_CLEANUP,
         QUEUE_POSITION_UPDATE,
-
-        // Transfer Events
+        
         TRANSFER_INITIATED,
         TRANSFER_COMPLETED,
         TRANSFER_FAILED,
-
-        // Broadcast Events
+        
         BROADCAST_ALL,
         BROADCAST_SERVER,
         BROADCAST_FAILED,
-
-        // Metrics Events
+        
         METRICS_COLLECTED,
         METRICS_FAILED,
-
-        // System Events
+        
         SYSTEM_STARTUP,
         SYSTEM_SHUTDOWN,
         SYSTEM_CONFIG_CHANGE,
         SYSTEM_EVENT,
-
-        // API Events
+        
         API_REQUEST,
         API_ERROR,
-
-        // Error Events
+        
         ERROR
     }
 
@@ -102,7 +92,7 @@ public class LogsService {
             this(type, message, null, null, null, null);
         }
 
-        // Getters
+        
         public String getId() { return id; }
         public Instant getTimestamp() { return timestamp; }
         public LogType getType() { return type; }
@@ -129,8 +119,7 @@ public class LogsService {
     public LogsService(ProxyServer server, Logger logger) {
         this.server = server;
         this.logger = logger;
-
-        // Add initial system startup event
+        
         logSystemStartup("LogsService initialized and ready");
     }
 
@@ -177,10 +166,7 @@ public class LogsService {
                 serverName,
                 metadata);
     }
-
-    // Specific logging methods for each event type
-
-    // Player Events
+    
     public void logPlayerJoin(String message, String playerName, String playerUuid, Map<String, Object> metadata) {
         addEvent(LogType.PLAYER_JOIN, message, playerName, playerUuid, null, metadata);
     }
@@ -192,8 +178,7 @@ public class LogsService {
     public void logPlayerReconnect(String message, String playerName, String playerUuid, Map<String, Object> metadata) {
         addEvent(LogType.PLAYER_RECONNECT, message, playerName, playerUuid, null, metadata);
     }
-
-    // Server Events
+    
     public void logServerConnect(String message, String playerName, String playerUuid, String serverName, Map<String, Object> metadata) {
         addEvent(LogType.SERVER_CONNECT, message, playerName, playerUuid, serverName, metadata);
     }
@@ -213,8 +198,7 @@ public class LogsService {
     public void logServerStatusCheck(String message, Map<String, Object> metadata) {
         addEvent(LogType.SERVER_STATUS_CHECK, message, null, null, null, metadata);
     }
-
-    // Queue Events
+    
     public void logQueueJoin(String message, String playerName, String playerUuid, Map<String, Object> metadata) {
         addEvent(LogType.QUEUE_JOIN, message, playerName, playerUuid, "queue", metadata);
     }
@@ -230,8 +214,7 @@ public class LogsService {
     public void logQueueCleanup(String message, Map<String, Object> metadata) {
         addEvent(LogType.QUEUE_CLEANUP, message, null, null, "queue", metadata);
     }
-
-    // Transfer Events
+    
     public void logTransferInitiated(String message, String playerName, String playerUuid, String serverName, Map<String, Object> metadata) {
         addEvent(LogType.TRANSFER_INITIATED, message, playerName, playerUuid, serverName, metadata);
     }
@@ -243,8 +226,7 @@ public class LogsService {
     public void logTransferFailed(String message, String playerName, String serverName, Map<String, Object> metadata) {
         addEvent(LogType.TRANSFER_FAILED, message, playerName, null, serverName, metadata);
     }
-
-    // Broadcast Events
+    
     public void logBroadcastAll(String message, Map<String, Object> metadata) {
         addEvent(LogType.BROADCAST_ALL, message, null, null, null, metadata);
     }
@@ -256,8 +238,7 @@ public class LogsService {
     public void logBroadcastFailed(String message, String serverName, Map<String, Object> metadata) {
         addEvent(LogType.BROADCAST_FAILED, message, null, null, serverName, metadata);
     }
-
-    // Metrics Events
+    
     public void logMetricsCollected(String message, String serverName, Map<String, Object> metadata) {
         addEvent(LogType.METRICS_COLLECTED, message, null, null, serverName, metadata);
     }
@@ -265,8 +246,7 @@ public class LogsService {
     public void logMetricsFailed(String message, String serverName, Map<String, Object> metadata) {
         addEvent(LogType.METRICS_FAILED, message, null, null, serverName, metadata);
     }
-
-    // System Events
+    
     public void logSystemStartup(String message) {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("timestamp", Instant.now().toString());
@@ -286,8 +266,7 @@ public class LogsService {
     public void logSystemEvent(String message, Map<String, Object> metadata) {
         addEvent(LogType.SYSTEM_EVENT, message, null, null, null, metadata);
     }
-
-    // API Events
+    
     public void logApiRequest(String message, Map<String, Object> metadata) {
         addEvent(LogType.API_REQUEST, message, null, null, null, metadata);
     }
@@ -295,8 +274,7 @@ public class LogsService {
     public void logApiError(String message, Map<String, Object> metadata) {
         addEvent(LogType.API_ERROR, message, null, null, null, metadata);
     }
-
-    // Error Events
+    
     public void logError(String message, String context, Exception exception) {
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("context", context);
@@ -308,8 +286,8 @@ public class LogsService {
     }
 
     public void logServerOperation(String message, String playerName, String playerUuid, String serverName, Map<String, Object> metadata) {
-    // Determine the appropriate log type based on the message content
-    LogType logType = LogType.SYSTEM_EVENT; // Default
+    
+    LogType logType = LogType.SYSTEM_EVENT; 
     
     if (message.contains("added")) {
         logType = LogType.SERVER_ONLINE;
@@ -328,9 +306,9 @@ public class LogsService {
         lock.writeLock().lock();
         try {
             LogEntry entry = new LogEntry(type, message, playerName, playerUuid, serverName, metadata);
-            recentEvents.addFirst(entry); // Add to front for newest first
+            recentEvents.addFirst(entry); 
 
-            // Remove old events if we exceed the maximum
+            
             while (recentEvents.size() > MAX_EVENTS) {
                 recentEvents.removeLast();
             }
@@ -341,9 +319,6 @@ public class LogsService {
         }
     }
 
-    /**
-     * Get recent events with optional filtering
-     */
     public List<Map<String, Object>> getRecentEvents(int limit, LogType filterType, String filterPlayer, Instant since) {
         lock.readLock().lock();
         try {
@@ -361,16 +336,10 @@ public class LogsService {
         }
     }
 
-    /**
-     * Get recent events with default settings
-     */
     public List<Map<String, Object>> getRecentEvents() {
         return getRecentEvents(DEFAULT_LIMIT, null, null, null);
     }
 
-    /**
-     * Get statistics about the logs
-     */
     public Map<String, Object> getLogStatistics() {
         lock.readLock().lock();
         try {
@@ -378,7 +347,7 @@ public class LogsService {
             stats.put("total_events", recentEvents.size());
             stats.put("max_capacity", MAX_EVENTS);
 
-            // Count by type
+            
             Map<String, Long> typeCounts = recentEvents.stream()
                     .collect(Collectors.groupingBy(
                             event -> event.getType().name().toLowerCase(),
@@ -386,7 +355,7 @@ public class LogsService {
                     ));
             stats.put("events_by_type", typeCounts);
 
-            // Get oldest and newest timestamps
+            
             if (!recentEvents.isEmpty()) {
                 stats.put("oldest_event", recentEvents.peekLast().getTimestamp().toString());
                 stats.put("newest_event", recentEvents.peekFirst().getTimestamp().toString());
@@ -398,9 +367,6 @@ public class LogsService {
         }
     }
 
-    /**
-     * Clear all events (admin function)
-     */
     public void clearEvents() {
         lock.writeLock().lock();
         try {

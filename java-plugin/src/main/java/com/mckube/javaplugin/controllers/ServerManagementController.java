@@ -32,7 +32,7 @@ public class ServerManagementController {
         CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
                 JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
-                if (jsonObject == null) return null; // Error already set in context
+                if (jsonObject == null) return null;
 
                 String name = ControllerUtils.validateJsonField(ctx, jsonObject, "name", "Server name");
                 if (name == null) return null;
@@ -46,7 +46,7 @@ public class ServerManagementController {
                 }
 
                 int port;
-                int maxPlayers = 100; // Default value
+                int maxPlayers = 100;
 
                 try {
                     port = jsonObject.get("port").getAsInt();
@@ -105,7 +105,7 @@ public class ServerManagementController {
         CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
                 JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
-                if (jsonObject == null) return null; // Error already set in context
+                if (jsonObject == null) return null;
 
                 String name = ControllerUtils.validateJsonField(ctx, jsonObject, "name", "Server name");
                 if (name == null) return null;
@@ -140,7 +140,7 @@ public class ServerManagementController {
         CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
                 JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
-                if (jsonObject == null) return null; // Error already set in context
+                if (jsonObject == null) return null;
 
                 String name = ControllerUtils.validateJsonField(ctx, jsonObject, "name", "Server name");
                 if (name == null) return null;
@@ -175,7 +175,7 @@ public class ServerManagementController {
         CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
                 JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
-                if (jsonObject == null) return null; // Error already set in context
+                if (jsonObject == null) return null;
 
                 String name = ControllerUtils.validateJsonField(ctx, jsonObject, "name", "Server name");
                 if (name == null) return null;
