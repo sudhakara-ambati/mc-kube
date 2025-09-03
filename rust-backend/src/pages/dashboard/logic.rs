@@ -1,21 +1,64 @@
 use yew::{function_component, html, Html, use_state, use_effect_with, Callback, MouseEvent};
 use crate::utils::{api_get, api_post, ApiError};
 use gloo_timers::callback::Interval;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct ServerSummary {
+    #[serde(rename = "totalServers")]
+    pub total_servers: i32,
+    #[serde(rename = "onlineServers")]
+    pub online_servers: i32,
+    #[serde(rename = "offlineServers")]
+    pub offline_servers: i32,
+    #[serde(rename = "healthyServers")]
+    pub healthy_servers: i32,
+    #[serde(rename = "totalPlayers")]
+    pub total_players: i32,
+}
+
+impl Default for ServerSummary {
+    fn default() -> Self {
+        Self {
+            total_servers: 0,
+            online_servers: 0,
+            offline_servers: 0,
+            healthy_servers: 0,
+            total_players: 0,
+        }
+    }
+}
 
 #[function_component(Dashboard)]
 pub fn dashboard() -> Html {
-    let metrics = use_state(|| String::from("CPU: 45%\nRAM: 12.3/32 GB (38%)\nDisk: 145/500 GB (29%)\nNetwork: 24.5 MB/s ↑ 18.2 MB/s ↓\nUptime: 7d 14h 32m\nServers Online: 3/4"));
+    let server_summary = use_state(|| ServerSummary::default());
+    let queue_count = use_state(|| 0i32);
     let network = use_state(|| String::from("Total Bandwidth: 100 Mbps\nCurrent Usage: 42.7 Mbps\nPackets/sec: 12,847\nConnections: 156\nLatency: 23ms\nPacket Loss: 0.02%"));
     let response = use_state(|| String::new());
 
     {
-        let metrics = metrics.clone();
+        let server_summary = server_summary.clone();
+        let queue_count = queue_count.clone();
         use_effect_with((), move |_| {
-            let metrics = metrics.clone();
+            let server_summary = server_summary.clone();
+            let queue_count = queue_count.clone();
             let interval = Interval::new(3000, move || {
-                api_get("http://localhost:8080/metrics/overall", {
-                    let metrics = metrics.clone();
-                    Callback::from(move |data| metrics.set(data))
+                api_get("http://localhost:8080/server/summary", {
+                    let server_summary = server_summary.clone();
+                    Callback::from(move |data: String| {
+                        if let Ok(summary) = serde_json::from_str::<ServerSummary>(&data) {
+                            server_summary.set(summary);
+                        }
+                    })
+                });
+                
+                api_get("http://localhost:8080/queue/count", {
+                    let queue_count = queue_count.clone();
+                    Callback::from(move |data: String| {
+                        if let Ok(count) = data.trim().parse::<i32>() {
+                            queue_count.set(count);
+                        }
+                    })
                 });
             });
             move || drop(interval)
@@ -77,7 +120,32 @@ pub fn dashboard() -> Html {
                         <span class="auto-refresh">{"● Auto-refresh"}</span>
                     </div>
                     <div class="card-content">
-                        <pre class="metrics-display">{&*metrics}</pre>
+                        <div class="metrics-display">
+                            <div class="metric-row">
+                                <span class="metric-label">{"Total Servers:"}</span>
+                                <span class="metric-value">{server_summary.total_servers}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">{"Online Servers:"}</span>
+                                <span class="metric-value">{server_summary.online_servers}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">{"Offline Servers:"}</span>
+                                <span class="metric-value">{server_summary.offline_servers}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">{"Healthy Servers:"}</span>
+                                <span class="metric-value">{server_summary.healthy_servers}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">{"Total Players:"}</span>
+                                <span class="metric-value">{server_summary.total_players}</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">{"Players in Queue:"}</span>
+                                <span class="metric-value">{*queue_count}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card network-card">

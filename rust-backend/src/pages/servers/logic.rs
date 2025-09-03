@@ -29,6 +29,12 @@ pub struct ServerInfo {
     pub load_status: String,
     #[serde(default = "default_serverip")]
     pub serverip: String,
+    #[serde(default = "default_enabled")]
+    pub enabled: bool,
+}
+
+fn default_enabled() -> bool {
+    true
 }
 
 fn default_serverip() -> String {
@@ -76,15 +82,44 @@ pub fn servers() -> Html {
         });
     }
 
-    let _create_restart_handler = {
+    let create_enable_handler = {
         let response = response.clone();
-        Callback::from(move |servername: String| {
-            api_post(&format!("http://localhost:8080/servers/{}/restart", servername), None, {
+        let fetch_servers = fetch_servers.clone();
+        Callback::from(move |server_id: String| {
+            let server_data = format!(r#"{{"name":"{}"}}"#, server_id);
+            
+            api_post("http://127.0.0.1:8080/server/enable", Some(&server_data), {
                 let response = response.clone();
+                let fetch_servers = fetch_servers.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
                     match result {
-                        Ok(data) => response.set(format!("Success: {}", data)),
-                        Err(e) => response.set(format!("Error: {}", e)),
+                        Ok(data) => {
+                            response.set(format!("Server enabled: {}", data));
+                            fetch_servers.emit(());
+                        }
+                        Err(e) => response.set(format!("Error enabling server: {}", e)),
+                    }
+                })
+            });
+        })
+    };
+
+    let create_disable_handler = {
+        let response = response.clone();
+        let fetch_servers = fetch_servers.clone();
+        Callback::from(move |server_id: String| {
+            let server_data = format!(r#"{{"name":"{}"}}"#, server_id);
+            
+            api_post("http://127.0.0.1:8080/server/disable", Some(&server_data), {
+                let response = response.clone();
+                let fetch_servers = fetch_servers.clone();
+                Callback::from(move |result: Result<String, ApiError>| {
+                    match result {
+                        Ok(data) => {
+                            response.set(format!("Server disabled: {}", data));
+                            fetch_servers.emit(()); // Refresh the list
+                        }
+                        Err(e) => response.set(format!("Error disabling server: {}", e)),
                     }
                 })
             });
@@ -179,8 +214,9 @@ pub fn servers() -> Html {
             </div>
             <div class="servers-grid">
                 {for servers.iter().map(|server| {
+                    let is_disabled = !server.enabled;
                     html! {
-                        <div class="server-card" key={server.name.clone()}>
+                        <div class={format!("server-card {}", if is_disabled { "disabled" } else { "" })} key={server.name.clone()}>
                             <div class="server-header">
                                 <h3 class="server-name">{&server.name}</h3>
                                 <span class={format!("server-status {}", if server.status == "online" { "online" } else { "offline" })}>{&server.status}</span>
@@ -195,32 +231,45 @@ pub fn servers() -> Html {
                                     <span class="value">{&server.load_status}</span>
                                 </div>
                                 <div class="info-row">
-                                    <span class="label">{"Name:"}</span>
-                                    <span class="value">{&server.name}</span>
+                                    <span class="label">{"Status:"}</span>
+                                    <span class={format!("value {}", if is_disabled { "disabled-text" } else { "" })}>
+                                        {if is_disabled { "Disabled" } else { "Enabled" }}
+                                    </span>
                                 </div>
                             </div>
                             <div class="server-actions">
-                                <button class="btn btn-sm btn-primary" onclick={{
-                                    let server_name = server.name.clone();
-                                    let navigator = navigator.clone();
-                                    Callback::from(move |_: MouseEvent| {
-                                        navigator.push(&Route::ServerDetail { id: server_name.clone() });
-                                    })
-                                }}>{"📊 Details"}</button>
-                                <button class="btn btn-sm btn-warning" onclick={{
-                                    let response = response.clone();
-                                    let server_name = server.name.clone();
-                                    Callback::from(move |_: MouseEvent| {
-                                        response.set(format!("Restarting server: {}", server_name));
-                                    })
-                                }}>{"🔄 Restart"}</button>
-                                <button class="btn btn-sm btn-danger" onclick={{
-                                    let response = response.clone();
-                                    let server_name = server.name.clone();
-                                    Callback::from(move |_: MouseEvent| {
-                                        response.set(format!("Stopping server: {}", server_name));
-                                    })
-                                }}>{"⏹ Stop"}</button>
+                                <button 
+                                    class="btn btn-sm btn-primary" 
+                                    onclick={{
+                                        let server_name = server.name.clone();
+                                        let navigator = navigator.clone();
+                                        Callback::from(move |_: MouseEvent| {
+                                            navigator.push(&Route::ServerDetail { id: server_name.clone() });
+                                        })
+                                    }}
+                                >{"📊 Details"}</button>
+                                <button 
+                                    class={format!("btn btn-sm btn-success {}", if server.enabled { "disabled" } else { "" })}
+                                    disabled={server.enabled}
+                                    onclick={{
+                                        let server_id = server.name.clone();
+                                        let enable_handler = create_enable_handler.clone();
+                                        Callback::from(move |_: MouseEvent| {
+                                            enable_handler.emit(server_id.clone());
+                                        })
+                                    }}
+                                >{"✅ Enable"}</button>
+                                <button 
+                                    class={format!("btn btn-sm btn-warning {}", if !server.enabled { "disabled" } else { "" })}
+                                    disabled={!server.enabled}
+                                    onclick={{
+                                        let server_id = server.name.clone();
+                                        let disable_handler = create_disable_handler.clone();
+                                        Callback::from(move |_: MouseEvent| {
+                                            disable_handler.emit(server_id.clone());
+                                        })
+                                    }}
+                                >{"❌ Disable"}</button>
                             </div>
                         </div>
                     }
