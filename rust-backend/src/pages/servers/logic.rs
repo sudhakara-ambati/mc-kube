@@ -20,25 +20,17 @@ pub struct ServerListResponse {
 #[allow(dead_code)]
 pub struct ServerInfo {
     pub name: String,
+    #[serde(rename = "host")]
+    pub serverip: String,    
+    pub port: i32,
     pub status: String,
+    pub enabled: bool,
     #[serde(rename = "currentPlayers")]
     pub current_players: i32,
     #[serde(rename = "maxPlayers")]
     pub max_players: i32,
     #[serde(rename = "loadStatus")]
     pub load_status: String,
-    #[serde(default = "default_serverip")]
-    pub serverip: String,
-    #[serde(default = "default_enabled")]
-    pub enabled: bool,
-}
-
-fn default_enabled() -> bool {
-    true
-}
-
-fn default_serverip() -> String {
-    "localhost".to_string()
 }
 
 #[function_component(Servers)]
@@ -61,7 +53,7 @@ pub fn servers() -> Html {
                     log!("Raw server list response:", data.clone());
                     match serde_json::from_str::<ServerListResponse>(&data) {
                         Ok(response) => {
-                            log!("Parsed server list successfully:", format!("{} servers", response.servers.len()));
+                            log!("Parsed server list successfully - count:", response.servers.len().to_string());
                             servers.set(response.servers);
                         }
                         Err(e) => {
@@ -117,7 +109,7 @@ pub fn servers() -> Html {
                     match result {
                         Ok(data) => {
                             response.set(format!("Server disabled: {}", data));
-                            fetch_servers.emit(()); // Refresh the list
+                            fetch_servers.emit(());
                         }
                         Err(e) => response.set(format!("Error disabling server: {}", e)),
                     }
@@ -173,7 +165,7 @@ pub fn servers() -> Html {
 
             log!("Formatted payload:", server_data.clone());
 
-                api_post("http://127.0.0.1:8080/server/add", Some(&server_data), {
+            api_post("http://127.0.0.1:8080/server/add", Some(&server_data), {
                 let response = response.clone();
                 let fetch_servers = fetch_servers.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
@@ -215,13 +207,30 @@ pub fn servers() -> Html {
             <div class="servers-grid">
                 {for servers.iter().map(|server| {
                     let is_disabled = !server.enabled;
+                    let status_class = match server.status.as_str() {
+                        "online" => "online",
+                        "offline" => "offline", 
+                        "disabled" => "disabled",
+                        _ => "unknown"
+                    };
+                    
                     html! {
-                        <div class={format!("server-card {}", if is_disabled { "disabled" } else { "" })} key={server.name.clone()}>
+                        <div class={format!("server-card {}", if is_disabled { "server-disabled" } else { "" })} key={server.name.clone()}>
                             <div class="server-header">
                                 <h3 class="server-name">{&server.name}</h3>
-                                <span class={format!("server-status {}", if server.status == "online" { "online" } else { "offline" })}>{&server.status}</span>
+                                <span class={format!("server-status {}", status_class)}>{&server.status}</span>
                             </div>
                             <div class="server-info">
+                                <div class="info-row">
+                                    <span class="label">{"Address:"}</span>
+                                    <span class="value">{format!("{}:{}", server.serverip, server.port)}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">{"Status:"}</span>
+                                    <span class={format!("value status-{}", if server.enabled { "enabled" } else { "disabled" })}>
+                                        {if server.enabled { "Enabled" } else { "Disabled" }}
+                                    </span>
+                                </div>
                                 <div class="info-row">
                                     <span class="label">{"Players:"}</span>
                                     <span class="value">{format!("{}/{}", server.current_players, if server.max_players == -1 { "∞".to_string() } else { server.max_players.to_string() })}</span>
@@ -230,46 +239,51 @@ pub fn servers() -> Html {
                                     <span class="label">{"Load:"}</span>
                                     <span class="value">{&server.load_status}</span>
                                 </div>
-                                <div class="info-row">
-                                    <span class="label">{"Status:"}</span>
-                                    <span class={format!("value {}", if is_disabled { "disabled-text" } else { "" })}>
-                                        {if is_disabled { "Disabled" } else { "Enabled" }}
-                                    </span>
-                                </div>
                             </div>
                             <div class="server-actions">
                                 <button 
-                                    class="btn btn-sm btn-primary" 
+                                    class={format!("btn btn-sm btn-primary {}", if is_disabled { "btn-disabled" } else { "" })}
+                                    disabled={is_disabled}
                                     onclick={{
-                                        let server_name = server.name.clone();
-                                        let navigator = navigator.clone();
-                                        Callback::from(move |_: MouseEvent| {
-                                            navigator.push(&Route::ServerDetail { id: server_name.clone() });
-                                        })
+                                        if !is_disabled {
+                                            let server_name = server.name.clone();
+                                            let navigator = navigator.clone();
+                                            Callback::from(move |_: MouseEvent| {
+                                                navigator.push(&Route::ServerDetail { id: server_name.clone() });
+                                            })
+                                        } else {
+                                            Callback::from(|_: MouseEvent| {})
+                                        }
                                     }}
                                 >{"📊 Details"}</button>
-                                <button 
-                                    class={format!("btn btn-sm btn-success {}", if server.enabled { "disabled" } else { "" })}
-                                    disabled={server.enabled}
-                                    onclick={{
-                                        let server_id = server.name.clone();
-                                        let enable_handler = create_enable_handler.clone();
-                                        Callback::from(move |_: MouseEvent| {
-                                            enable_handler.emit(server_id.clone());
-                                        })
-                                    }}
-                                >{"✅ Enable"}</button>
-                                <button 
-                                    class={format!("btn btn-sm btn-warning {}", if !server.enabled { "disabled" } else { "" })}
-                                    disabled={!server.enabled}
-                                    onclick={{
-                                        let server_id = server.name.clone();
-                                        let disable_handler = create_disable_handler.clone();
-                                        Callback::from(move |_: MouseEvent| {
-                                            disable_handler.emit(server_id.clone());
-                                        })
-                                    }}
-                                >{"❌ Disable"}</button>
+                                
+                                {if !server.enabled {
+                                    html! {
+                                        <button 
+                                            class="btn btn-sm btn-success"
+                                            onclick={{
+                                                let server_id = server.name.clone();
+                                                let enable_handler = create_enable_handler.clone();
+                                                Callback::from(move |_: MouseEvent| {
+                                                    enable_handler.emit(server_id.clone());
+                                                })
+                                            }}
+                                        >{"✅ Enable"}</button>
+                                    }
+                                } else {
+                                    html! {
+                                        <button 
+                                            class="btn btn-sm btn-warning"
+                                            onclick={{
+                                                let server_id = server.name.clone();
+                                                let disable_handler = create_disable_handler.clone();
+                                                Callback::from(move |_: MouseEvent| {
+                                                    disable_handler.emit(server_id.clone());
+                                                })
+                                            }}
+                                        >{"❌ Disable"}</button>
+                                    }
+                                }}
                             </div>
                         </div>
                     }
