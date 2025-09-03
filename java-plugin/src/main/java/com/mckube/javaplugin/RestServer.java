@@ -21,6 +21,7 @@ public class RestServer {
     private final MetricsController metricsController;
     private final LogsController logsController;
     private final ServerManagementController serverManagementController;
+    private final PerformanceController performanceController;
     private final Logger logger;
     private Javalin app;
 
@@ -39,6 +40,7 @@ public class RestServer {
         this.serverManagementController = new ServerManagementController(serverManagementService, logger);
         this.logsController = new LogsController(logsService, logger);
         this.healthController = new HealthController();
+        this.performanceController = new PerformanceController(logger, serverListService);
     }
 
     public void start(int port) {
@@ -60,8 +62,34 @@ public class RestServer {
         metricsController.registerRoutes(app);
         serverManagementController.registerRoutes(app);
         logsController.registerRoutes(app);
+        performanceController.registerRoutes(app);
 
         logger.info("REST API started on port {}", port);
+        
+        startCacheCleanupScheduler();
+        logger.info("Performance optimizations active: Cache cleanup scheduler started");
+    }
+    
+    private void startCacheCleanupScheduler() {
+        Thread cleanupThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    Thread.sleep(300000);
+                    metricsController.cleanupCache();
+                    queueController.cleanupCache();
+                    serverManagementController.cleanupRateLimitCache();
+                    logger.debug("Performed periodic cache cleanup - freed expired entries");
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (Exception e) {
+                    logger.warn("Error during cache cleanup: {}", e.getMessage());
+                }
+            }
+        });
+        cleanupThread.setName("MC-Kube-Cache-Cleanup");
+        cleanupThread.setDaemon(true);
+        cleanupThread.start();
     }
 
     public void stop() {

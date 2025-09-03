@@ -33,9 +33,14 @@ import json
 #   "name": "survival-1"
 # }
 
-url = "http://localhost:8080/server/disable"
-data = {
-    "name": "lobby"
-}
+url = "http://localhost:8080/server/test"
+# data = {
+#     "name": "lobby"
+# }
 
-response = requests.post(url, data=json.dumps(data))
+response = requests.get(url)
+print(response.status_code)
+print(response.json())
+
+with open('response_server.json', 'w') as f:
+    json.dump(response.json(), f, indent=4)

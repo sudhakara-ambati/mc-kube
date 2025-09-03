@@ -95,7 +95,7 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
                 };
 
                 fetch_metrics();
-                Some(Interval::new(2000, fetch_metrics))
+                Some(Interval::new(5000, fetch_metrics)) // made 5s for performance
             } else {
                 None
             };

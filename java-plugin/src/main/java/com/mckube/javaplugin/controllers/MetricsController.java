@@ -10,11 +10,31 @@ import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.time.Instant;
+import java.time.Duration;
 
 public class MetricsController {
 
     private final MetricsService metricsService;
     private final Logger logger;
+    
+    private final Map<String, CachedMetricsResponse> responseCache = new ConcurrentHashMap<>();
+    private static final Duration CACHE_TTL = Duration.ofSeconds(3);
+    
+    private static class CachedMetricsResponse {
+        final Map<String, Object> response;
+        final Instant timestamp;
+        
+        CachedMetricsResponse(Map<String, Object> response) {
+            this.response = response;
+            this.timestamp = Instant.now();
+        }
+        
+        boolean isExpired() {
+            return Duration.between(timestamp, Instant.now()).compareTo(CACHE_TTL) > 0;
+        }
+    }
 
     public MetricsController(MetricsService metricsService, Logger logger) {
         this.metricsService = metricsService;
@@ -29,10 +49,16 @@ public class MetricsController {
     private void getMetrics(Context ctx) {
         String serverIp = ctx.pathParam("serverIp");
 
-        CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
+        CompletableFuture.supplyAsync(() -> {
             try {
                 if (!ControllerUtils.validatePathParam(ctx, serverIp, "Server IP")) {
                     return null;
+                }
+                
+                CachedMetricsResponse cached = responseCache.get(serverIp);
+                if (cached != null && !cached.isExpired()) {
+                    logger.debug("Serving metrics from cache for server: {}", serverIp);
+                    return cached.response;
                 }
 
                 var data = metricsService.getMetrics(serverIp);
@@ -41,37 +67,43 @@ public class MetricsController {
                     return null;
                 }
 
-                Map<String, Object> response = Map.ofEntries(
-                        new AbstractMap.SimpleEntry<>("success", true),
-                        new AbstractMap.SimpleEntry<>("server_ip", data.serverIp()),
-                        new AbstractMap.SimpleEntry<>("timestamp", (data.timestamp())),
-                        new AbstractMap.SimpleEntry<>("system_cpu_percent", round(data.systemCpuPercent())),
-                        new AbstractMap.SimpleEntry<>("process_cpu_percent", round(data.processCpuPercent())),
-                        new AbstractMap.SimpleEntry<>("memory_used_gb", round(data.memoryUsedGB())),
-                        new AbstractMap.SimpleEntry<>("memory_max_gb", round(data.memoryMaxGB())),
-                        new AbstractMap.SimpleEntry<>("memory_percent", round(data.memoryPercent())),
-                        new AbstractMap.SimpleEntry<>("system_memory_used_gb", round(data.systemMemoryUsedGB())),
-                        new AbstractMap.SimpleEntry<>("system_memory_total_gb", round(data.systemMemoryTotalGB())),
-                        new AbstractMap.SimpleEntry<>("system_memory_percent", round(data.systemMemoryPercent())),
-                        new AbstractMap.SimpleEntry<>("tps", round(data.tps(), 2)),
-                        new AbstractMap.SimpleEntry<>("tps_percent", round(data.tpsPercent()))
-                );
-
-                ctx.status(200).json(response);
-                return null;
+                Map<String, Object> response = buildMetricsResponse(data);
+                
+                responseCache.put(serverIp, new CachedMetricsResponse(response));
+                
+                return response;
 
             } catch (Exception e) {
                 logger.error("Error retrieving metrics for server IP: " + serverIp, e);
-                ctx.status(500).json(ControllerUtils.createErrorResponse("Internal server error while retrieving metrics"));
-                return null;
+                throw new RuntimeException("Failed to retrieve metrics", e);
+            }
+        }).thenAccept(response -> {
+            if (response != null) {
+                ctx.status(200).json(response);
             }
         }).exceptionally(throwable -> {
             logger.error("Unexpected error in metrics retrieval handler for server IP: " + serverIp, throwable);
             ctx.status(500).json(ControllerUtils.createErrorResponse("Failed to retrieve metrics"));
             return null;
         });
-
-        ctx.future(() -> future);
+    }
+    
+    private Map<String, Object> buildMetricsResponse(MetricsData data) {
+        return Map.ofEntries(
+                new AbstractMap.SimpleEntry<>("success", true),
+                new AbstractMap.SimpleEntry<>("server_ip", data.serverIp()),
+                new AbstractMap.SimpleEntry<>("timestamp", (data.timestamp())),
+                new AbstractMap.SimpleEntry<>("system_cpu_percent", round(data.systemCpuPercent())),
+                new AbstractMap.SimpleEntry<>("process_cpu_percent", round(data.processCpuPercent())),
+                new AbstractMap.SimpleEntry<>("memory_used_gb", round(data.memoryUsedGB())),
+                new AbstractMap.SimpleEntry<>("memory_max_gb", round(data.memoryMaxGB())),
+                new AbstractMap.SimpleEntry<>("memory_percent", round(data.memoryPercent())),
+                new AbstractMap.SimpleEntry<>("system_memory_used_gb", round(data.systemMemoryUsedGB())),
+                new AbstractMap.SimpleEntry<>("system_memory_total_gb", round(data.systemMemoryTotalGB())),
+                new AbstractMap.SimpleEntry<>("system_memory_percent", round(data.systemMemoryPercent())),
+                new AbstractMap.SimpleEntry<>("tps", round(data.tps(), 2)),
+                new AbstractMap.SimpleEntry<>("tps_percent", round(data.tpsPercent()))
+        );
     }
 
     private void postMetrics(Context ctx) {
@@ -118,5 +150,18 @@ public class MetricsController {
     private static double round(double v, int d) {
         double factor = Math.pow(10, d);
         return Math.round(v * factor) / factor;
+    }
+    
+    
+    public void invalidateCache(String serverIp) {
+        responseCache.remove(serverIp);
+    }
+    
+    public void clearCache() {
+        responseCache.clear();
+    }
+    
+    public void cleanupCache() {
+        responseCache.entrySet().removeIf(entry -> entry.getValue().isExpired());
     }
 }

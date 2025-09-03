@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chrono = { version = "0.4", features = ["serde"] }
 yew = { version = "0.21", features = ["csr"] }
 yew-router = "0.18"
 gloo-net = "0.4"

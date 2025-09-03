@@ -13,17 +13,31 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ForkJoinPool;
+import java.time.Instant;
+import java.time.Duration;
 
 public class ServerListService {
 
     private final ProxyServer server;
     private final Logger logger;
     private LogsService logsService;
-    private ServerManagementService serverManagementService; 
+    private ServerManagementService serverManagementService;
+    
+    
+    private final Map<String, ServerStatus> statusCache = new ConcurrentHashMap<>();
+    private final Map<String, Instant> lastPingTime = new ConcurrentHashMap<>();
+    private final ForkJoinPool pingExecutor = new ForkJoinPool(8); 
+    private static final Duration CACHE_TTL = Duration.ofSeconds(10); 
+    private static final Duration PING_TIMEOUT = Duration.ofSeconds(3); 
+    private volatile Instant lastFullRefresh = Instant.EPOCH; 
 
     public ServerListService(ProxyServer server, Logger logger) {
         this.server = server;
         this.logger = logger;
+        logger.info("ServerListService initialized with performance caching (TTL: {}s)", CACHE_TTL.getSeconds());
     }
 
     public void setLogsService(LogsService logsService) {
@@ -35,6 +49,27 @@ public class ServerListService {
     }
 
     public CompletableFuture<List<ServerStatus>> getAllServersWithStatus() {
+        
+        if (shouldUseCachedData()) {
+            List<ServerStatus> cachedResults = getCachedServerStatuses();
+            if (!cachedResults.isEmpty()) {
+                logger.debug("Serving {} servers from cache", cachedResults.size());
+                return CompletableFuture.completedFuture(cachedResults);
+            }
+        }
+        
+        return performFullServerRefresh();
+    }
+    
+    private boolean shouldUseCachedData() {
+        return Duration.between(lastFullRefresh, Instant.now()).compareTo(CACHE_TTL) < 0;
+    }
+    
+    private List<ServerStatus> getCachedServerStatuses() {
+        return new ArrayList<>(statusCache.values());
+    }
+    
+    private CompletableFuture<List<ServerStatus>> performFullServerRefresh() {
         if (serverManagementService == null) {
             logger.error("ServerManagementService not set, falling back to registered servers only");
             return getAllRegisteredServersWithStatus();
@@ -61,15 +96,16 @@ public class ServerListService {
                 mongoServerNames.add(serverName);
                 Boolean enabled = (Boolean) serverData.get("enabled");
                 
-                if (enabled != null && enabled) {
-                    Optional<RegisteredServer> registeredServer = server.getServer(serverName);
-                    if (registeredServer.isPresent()) {
-                        futures.add(getServerStatus(registeredServer.get(), true));
-                    } else {
-                        futures.add(CompletableFuture.completedFuture(createOfflineServerStatus(serverData, true)));
-                    }
+                
+                Optional<RegisteredServer> registeredServer = server.getServer(serverName);
+                if (registeredServer.isPresent()) {
+                    
+                    boolean isEnabled = enabled != null ? enabled : true;
+                    futures.add(getServerStatus(registeredServer.get(), isEnabled));
                 } else {
-                    futures.add(CompletableFuture.completedFuture(createOfflineServerStatus(serverData, false)));
+                    
+                    boolean isEnabled = enabled != null ? enabled : true;
+                    futures.add(CompletableFuture.completedFuture(createOfflineServerStatus(serverData, isEnabled)));
                 }
             }
 
@@ -86,6 +122,10 @@ public class ServerListService {
                         List<ServerStatus> results = futures.stream()
                                 .map(CompletableFuture::join)
                                 .toList();
+
+                        
+                        updateCache(results);
+                        lastFullRefresh = Instant.now();
 
                         if (logsService != null) {
                             long onlineServers = results.stream().filter(s -> "online".equals(s.getStatus())).count();
@@ -107,6 +147,16 @@ public class ServerListService {
         } catch (Exception e) {
             logger.error("Error getting servers from database, falling back to registered servers", e);
             return getAllRegisteredServersWithStatus();
+        }
+    }
+    
+    private void updateCache(List<ServerStatus> results) {
+        
+        statusCache.clear();
+        
+        
+        for (ServerStatus status : results) {
+            statusCache.put(status.getName(), status);
         }
     }
 
@@ -191,13 +241,35 @@ public class ServerListService {
 
     private CompletableFuture<ServerStatus> getServerStatus(RegisteredServer registeredServer, boolean enabled) {
         ServerInfo serverInfo = registeredServer.getServerInfo();
+        String serverName = serverInfo.getName();
         long startTime = System.currentTimeMillis();
+
+        
+        Instant lastPing = lastPingTime.get(serverName);
+        if (lastPing != null && Duration.between(lastPing, Instant.now()).compareTo(Duration.ofSeconds(5)) < 0) {
+            ServerStatus cached = statusCache.get(serverName);
+            if (cached != null) {
+                logger.debug("Using cached status for server: {}", serverName);
+                return CompletableFuture.completedFuture(cached);
+            }
+        }
 
         int currentPlayers = registeredServer.getPlayersConnected().size();
 
-        return registeredServer.ping()
+        
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return registeredServer.ping()
+                        .orTimeout(PING_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)
+                        .get(PING_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                logger.debug("Server {} ping failed or timed out: {}", serverName, e.getMessage());
+                throw new RuntimeException("Ping failed", e);
+            }
+        }, pingExecutor)
                 .thenApply(ping -> {
                     long latency = System.currentTimeMillis() - startTime;
+                    lastPingTime.put(serverName, Instant.now()); 
 
                     String version = ping.getVersion() != null ?
                             ping.getVersion().getName() : "Unknown";
@@ -362,5 +434,27 @@ public class ServerListService {
         public boolean isHealthy() {
             return enabled && status.equals("online") && latency > 0 && latency < 1000;
         }
+    }
+    
+    
+    public void shutdown() {
+        if (pingExecutor != null && !pingExecutor.isShutdown()) {
+            pingExecutor.shutdown();
+            try {
+                if (!pingExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    pingExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                pingExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+    
+    
+    public void clearCache() {
+        statusCache.clear();
+        lastPingTime.clear();
+        lastFullRefresh = Instant.EPOCH;
     }
 }

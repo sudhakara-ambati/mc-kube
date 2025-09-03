@@ -1,7 +1,9 @@
 use gloo_console::log;
+use gloo_timers::callback::Interval;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use serde::Deserialize;
+use chrono::{DateTime, Utc};
 use crate::utils::{api_get, api_post, ApiError};
 use crate::Route;
 
@@ -31,6 +33,15 @@ pub struct ServerInfo {
     pub max_players: i32,
     #[serde(rename = "loadStatus")]
     pub load_status: String,
+    pub motd: String,
+    #[serde(rename = "serverTimestamp")]
+    pub server_timestamp: String,
+    #[serde(rename = "loadPercentage")]
+    pub load_percentage: f64,
+    pub latency: i32,
+    pub version: String,
+    #[serde(rename = "isHealthy")]
+    pub is_healthy: bool,
 }
 
 #[function_component(Servers)]
@@ -43,24 +54,60 @@ pub fn servers() -> Html {
     let new_server_port = use_state(|| String::new());
     let navigator = use_navigator().unwrap();
     let servers = use_state(Vec::new);
+    let is_loading = use_state(|| true);
+    let action_loading = use_state(|| None::<String>);
+    let last_updated = use_state(|| None::<String>);
+
+    // seperate fetch to avoid re triggering loading state
+    let fetch_servers_background = {
+        let servers = servers.clone();
+        let last_updated = last_updated.clone();
+        Callback::from(move |_: ()| {
+            api_get("http://127.0.0.1:8080/server/list", {
+                let servers = servers.clone();
+                let last_updated = last_updated.clone();
+                Callback::from(move |data: String| {
+                    log!("Background refresh - Raw server list response:", data.clone());
+                    match serde_json::from_str::<ServerListResponse>(&data) {
+                        Ok(response) => {
+                            log!("Background refresh - Parsed server list successfully - count:", response.servers.len().to_string());
+                            servers.set(response.servers);
+                            last_updated.set(Some(Utc::now().format("%H:%M:%S UTC").to_string()));
+                        }
+                        Err(e) => {
+                            log!("Background refresh - Error parsing server list:", e.to_string());
+                            log!("Background refresh - Raw data was:", data);
+                        }
+                    }
+                })
+            });
+        })
+    };
 
     let fetch_servers = {
         let servers = servers.clone();
+        let is_loading = is_loading.clone();
+        let last_updated = last_updated.clone();
         Callback::from(move |_: ()| {
-            api_get("http://localhost:8080/server/list", {
+            is_loading.set(true);
+            api_get("http://127.0.0.1:8080/server/list", {
                 let servers = servers.clone();
+                let is_loading = is_loading.clone();
+                let last_updated = last_updated.clone();
                 Callback::from(move |data: String| {
                     log!("Raw server list response:", data.clone());
                     match serde_json::from_str::<ServerListResponse>(&data) {
                         Ok(response) => {
                             log!("Parsed server list successfully - count:", response.servers.len().to_string());
                             servers.set(response.servers);
+                            last_updated.set(Some(Utc::now().format("%H:%M:%S UTC").to_string()));
                         }
                         Err(e) => {
                             log!("Error parsing server list:", e.to_string());
                             log!("Raw data was:", data);
                         }
                     }
+                    is_loading.set(false);
                 })
             });
         })
@@ -74,16 +121,52 @@ pub fn servers() -> Html {
         });
     }
 
+    // every 20s
+    {
+        let fetch_servers_background = fetch_servers_background.clone();
+        use_effect_with((), move |_| {
+            let interval = Interval::new(20000, move || {
+                log!("Performing periodic background refresh...");
+                fetch_servers_background.emit(());
+            });
+            
+            move || {
+                drop(interval);
+            }
+        });
+    }
+
+    fn format_timestamp(ts: &str) -> String {
+        match DateTime::parse_from_rfc3339(ts) {
+            Ok(dt) => dt.with_timezone(&Utc).format("%Y-%m-%d %H:%M:%S UTC").to_string(),
+            Err(_) => ts.to_string(),
+        }
+    }
+
+    fn extract_motd_content(motd: &str) -> String {
+        if let Some(start) = motd.find("content=\"") {
+            let rest = &motd[start + 9..];
+            if let Some(end) = rest.find('"') {
+                return rest[..end].to_string();
+            }
+        }
+        motd.to_string()
+    }
+
     let create_enable_handler = {
         let response = response.clone();
         let fetch_servers = fetch_servers.clone();
+        let action_loading = action_loading.clone();
         Callback::from(move |server_id: String| {
+            action_loading.set(Some(format!("enabling_{}", server_id)));
             let server_data = format!(r#"{{"name":"{}"}}"#, server_id);
             
             api_post("http://127.0.0.1:8080/server/enable", Some(&server_data), {
                 let response = response.clone();
                 let fetch_servers = fetch_servers.clone();
+                let action_loading = action_loading.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
+                    action_loading.set(None);
                     match result {
                         Ok(data) => {
                             response.set(format!("Server enabled: {}", data));
@@ -99,13 +182,17 @@ pub fn servers() -> Html {
     let create_disable_handler = {
         let response = response.clone();
         let fetch_servers = fetch_servers.clone();
+        let action_loading = action_loading.clone();
         Callback::from(move |server_id: String| {
+            action_loading.set(Some(format!("disabling_{}", server_id)));
             let server_data = format!(r#"{{"name":"{}"}}"#, server_id);
             
             api_post("http://127.0.0.1:8080/server/disable", Some(&server_data), {
                 let response = response.clone();
                 let fetch_servers = fetch_servers.clone();
+                let action_loading = action_loading.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
+                    action_loading.set(None);
                     match result {
                         Ok(data) => {
                             response.set(format!("Server disabled: {}", data));
@@ -122,6 +209,13 @@ pub fn servers() -> Html {
         let show_add_modal = show_add_modal.clone();
         Callback::from(move |_: MouseEvent| {
             show_add_modal.set(true);
+        })
+    };
+
+    let manual_refresh_click = {
+        let fetch_servers = fetch_servers.clone();
+        Callback::from(move |_: MouseEvent| {
+            fetch_servers.emit(());
         })
     };
 
@@ -199,95 +293,150 @@ pub fn servers() -> Html {
                 <div>
                     <h1>{"Server List"}</h1>
                     <p>{"Manage your Minecraft servers"}</p>
+                    {if let Some(updated) = last_updated.as_ref() {
+                        html! {
+                            <small class="last-updated">
+                                {"Last updated: "}{updated}{" (Auto-refreshes every 15s)"}
+                            </small>
+                        }
+                    } else {
+                        html! {}
+                    }}
                 </div>
                 <div class="header-actions">
+                    <button class="btn btn-secondary" onclick={manual_refresh_click} disabled={*is_loading}>
+                        {if *is_loading { "🔄 Refreshing..." } else { "🔄 Refresh" }}
+                    </button>
                     <button class="btn btn-success" onclick={add_server_click}>{"➕ Add Server"}</button>
                 </div>
             </div>
             <div class="servers-grid">
-                {for servers.iter().map(|server| {
-                    let is_disabled = !server.enabled;
-                    let status_class = match server.status.as_str() {
-                        "online" => "online",
-                        "offline" => "offline", 
-                        "disabled" => "disabled",
-                        _ => "unknown"
-                    };
-                    
+                {if *is_loading {
                     html! {
-                        <div class={format!("server-card {}", if is_disabled { "server-disabled" } else { "" })} key={server.name.clone()}>
-                            <div class="server-header">
-                                <h3 class="server-name">{&server.name}</h3>
-                                <span class={format!("server-status {}", status_class)}>{&server.status}</span>
-                            </div>
-                            <div class="server-info">
-                                <div class="info-row">
-                                    <span class="label">{"Address:"}</span>
-                                    <span class="value">{format!("{}:{}", server.serverip, server.port)}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="label">{"Status:"}</span>
-                                    <span class={format!("value status-{}", if server.enabled { "enabled" } else { "disabled" })}>
-                                        {if server.enabled { "Enabled" } else { "Disabled" }}
-                                    </span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="label">{"Players:"}</span>
-                                    <span class="value">{format!("{}/{}", server.current_players, if server.max_players == -1 { "∞".to_string() } else { server.max_players.to_string() })}</span>
-                                </div>
-                                <div class="info-row">
-                                    <span class="label">{"Load:"}</span>
-                                    <span class="value">{&server.load_status}</span>
-                                </div>
-                            </div>
-                            <div class="server-actions">
-                                <button 
-                                    class={format!("btn btn-sm btn-primary {}", if is_disabled { "btn-disabled" } else { "" })}
-                                    disabled={is_disabled}
-                                    onclick={{
-                                        if !is_disabled {
-                                            let server_name = server.name.clone();
-                                            let navigator = navigator.clone();
-                                            Callback::from(move |_: MouseEvent| {
-                                                navigator.push(&Route::ServerDetail { id: server_name.clone() });
-                                            })
-                                        } else {
-                                            Callback::from(|_: MouseEvent| {})
-                                        }
-                                    }}
-                                >{"📊 Details"}</button>
-                                
-                                {if !server.enabled {
-                                    html! {
-                                        <button 
-                                            class="btn btn-sm btn-success"
-                                            onclick={{
-                                                let server_id = server.name.clone();
-                                                let enable_handler = create_enable_handler.clone();
-                                                Callback::from(move |_: MouseEvent| {
-                                                    enable_handler.emit(server_id.clone());
-                                                })
-                                            }}
-                                        >{"✅ Enable"}</button>
-                                    }
-                                } else {
-                                    html! {
-                                        <button 
-                                            class="btn btn-sm btn-warning"
-                                            onclick={{
-                                                let server_id = server.name.clone();
-                                                let disable_handler = create_disable_handler.clone();
-                                                Callback::from(move |_: MouseEvent| {
-                                                    disable_handler.emit(server_id.clone());
-                                                })
-                                            }}
-                                        >{"❌ Disable"}</button>
-                                    }
-                                }}
-                            </div>
+                        <div class="loading-container">
+                            <div class="loading-spinner"></div>
+                            <p class="loading-text">{"Loading servers..."}</p>
                         </div>
                     }
-                })}
+                } else {
+                    html! {
+                        <>
+                        {for servers.iter().map(|server| {
+                            let is_disabled = !server.enabled;
+                            let status_class = match server.status.as_str() {
+                                "online" => "online",
+                                "offline" => "offline", 
+                                "disabled" => "disabled",
+                                _ => "unknown"
+                            };
+                            
+                            html! {
+                                <div class={format!("server-card {}", if is_disabled { "server-disabled" } else { "" })} key={server.name.clone()}>
+                                    <div class="server-header">
+                                        <h3 class="server-name">{&server.name}</h3>
+                                        <span class={format!("server-status {}", status_class)}>{&server.status}</span>
+                                    </div>
+                                        <div class="server-info">
+                                            <div class="info-row">
+                                                <span class="label">{"Address:"}</span>
+                                                <span class="value">{format!("{}:{}", server.serverip, server.port)}</span>
+                                            </div>
+                                            <div class="info-row">
+                                                <span class="label">{"Status:"}</span>
+                                                <span class={format!("value status-{}", if server.enabled { "enabled" } else { "disabled" })}>
+                                                    {if server.enabled { "Enabled" } else { "Disabled" }}
+                                                </span>
+                                            </div>
+                                            <div class="info-row">
+                                                <span class="label">{"Players:"}</span>
+                                                <span class="value">{format!("{}/{}", server.current_players, if server.max_players == -1 { "∞".to_string() } else { server.max_players.to_string() })}</span>
+                                            </div>
+                                            <div class="info-row">
+                                                <span class="label">{"Load:"}</span>
+                                                <span class="value">{&server.load_status}</span>
+                                            </div>
+                                            <div class="info-row">
+                                                <span class="label">{"Load %:"}</span>
+                                                <span class="value">{format!("{:.1}%", server.load_percentage)}</span>
+                                            </div>
+                                            <div class="info-row">
+                                                <span class="label">{"Latency:"}</span>
+                                                <span class="value">{if server.latency == -1 { "N/A".to_string() } else { format!("{} ms", server.latency) }}</span>
+                                            </div>
+                                            <div class="info-row">
+                                                <span class="label">{"Version:"}</span>
+                                                <span class="value">{&server.version}</span>
+                                            </div>
+                                            <div class="info-row">
+                                                <span class="label">{"Healthy:"}</span>
+                                                <span class={format!("value healthy-{}", if server.is_healthy { "yes" } else { "no" })}>
+                                                    {if server.is_healthy { "Yes" } else { "No" }}
+                                                </span>
+                                            </div>
+                                                <div class="info-row">
+                                                    <span class="label">{"MOTD:"}</span>
+                                                    <span class="value">{extract_motd_content(&server.motd)}</span>
+                                                </div>
+                                            <div class="info-row">
+                                                <span class="label">{"Timestamp:"}</span>
+                                                <span class="value">{format_timestamp(&server.server_timestamp)}</span>
+                                            </div>
+                                        </div>
+                                    <div class="server-actions">
+                                        <button 
+                                            class={format!("btn btn-sm btn-primary {}", if is_disabled { "btn-disabled" } else { "" })}
+                                            disabled={is_disabled}
+                                            onclick={{
+                                                if !is_disabled {
+                                                    let server_name = server.name.clone();
+                                                    let navigator = navigator.clone();
+                                                    Callback::from(move |_: MouseEvent| {
+                                                        navigator.push(&Route::ServerDetail { id: server_name.clone() });
+                                                    })
+                                                } else {
+                                                    Callback::from(|_: MouseEvent| {})
+                                                }
+                                            }}
+                                        >{"📊 Details"}</button>
+                                        
+                                        {if !server.enabled {
+                                            let is_enabling = action_loading.as_ref().map_or(false, |loading| loading == &format!("enabling_{}", server.name));
+                                            html! {
+                                                <button 
+                                                    class={format!("btn btn-sm btn-success {}", if is_enabling { "btn-loading" } else { "" })}
+                                                    disabled={is_enabling}
+                                                    onclick={{
+                                                        let server_id = server.name.clone();
+                                                        let enable_handler = create_enable_handler.clone();
+                                                        Callback::from(move |_: MouseEvent| {
+                                                            enable_handler.emit(server_id.clone());
+                                                        })
+                                                    }}
+                                                >{if is_enabling { "⏳ Enabling..." } else { "✅ Enable" }}</button>
+                                            }
+                                        } else {
+                                            let is_disabling = action_loading.as_ref().map_or(false, |loading| loading == &format!("disabling_{}", server.name));
+                                            html! {
+                                                <button 
+                                                    class={format!("btn btn-sm btn-warning {}", if is_disabling { "btn-loading" } else { "" })}
+                                                    disabled={is_disabling}
+                                                    onclick={{
+                                                        let server_id = server.name.clone();
+                                                        let disable_handler = create_disable_handler.clone();
+                                                        Callback::from(move |_: MouseEvent| {
+                                                            disable_handler.emit(server_id.clone());
+                                                        })
+                                                    }}
+                                                >{if is_disabling { "⏳ Disabling..." } else { "❌ Disable" }}</button>
+                                            }
+                                        }}
+                                    </div>
+                                </div>
+                            }
+                        })}
+                        </>
+                    }
+                }}
             </div>
             
             {if *show_add_modal {

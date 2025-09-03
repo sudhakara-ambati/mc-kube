@@ -3,6 +3,7 @@ package com.mckube.javaplugin.services;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import com.mongodb.client.model.Projections;
 import com.mckube.javaplugin.models.ManagedServer;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
@@ -420,7 +421,11 @@ public class ServerManagementService {
         List<Map<String, Object>> servers = new ArrayList<>();
         
         try {
-            for (Document doc : serverCollection.find()) {
+            FindIterable<Document> results = serverCollection.find()
+                    .projection(Projections.include("name", "ip", "port", "maxPlayers", "enabled", 
+                            "createdAt", "lastModified", "createdBy", "lastEnabledBy", "lastDisabledBy"));
+            
+            for (Document doc : results) {
                 Map<String, Object> server = new HashMap<>();
                 server.put("name", doc.getString("name"));
                 server.put("ip", doc.getString("ip"));

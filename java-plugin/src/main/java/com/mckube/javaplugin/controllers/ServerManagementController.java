@@ -9,11 +9,19 @@ import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+import java.time.Instant;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerManagementController {
 
     private final ServerManagementService serverService;
     private final Logger logger;
+    
+    
+    private final ForkJoinPool operationExecutor = new ForkJoinPool(4); 
+    private final Map<String, Instant> lastOperationTime = new ConcurrentHashMap<>(); 
+    private static final long MIN_OPERATION_INTERVAL_MS = 1000; 
 
     public ServerManagementController(ServerManagementService serverService, Logger logger) {
         this.serverService = serverService;
@@ -29,16 +37,31 @@ public class ServerManagementController {
     }
 
     private void handleAddServer(Context ctx) {
+        String clientId = ctx.ip(); 
+        
+        
+        if (isRateLimited(clientId)) {
+            ctx.status(429).json(ControllerUtils.createErrorResponse("Too many requests. Please wait before retrying."));
+            return;
+        }
+        
         CompletableFuture<Object> future = CompletableFuture.supplyAsync(() -> {
             try {
+                long startTime = System.currentTimeMillis();
                 JsonObject jsonObject = ControllerUtils.parseAndValidateRequestBody(ctx);
                 if (jsonObject == null) return null;
 
-                String name = ControllerUtils.validateJsonField(ctx, jsonObject, "name", "Server name");
-                if (name == null) return null;
+                
+                String[] requiredFields = {"name", "ip"};
+                for (String field : requiredFields) {
+                    if (!jsonObject.has(field) || jsonObject.get(field).isJsonNull()) {
+                        ctx.status(400).json(ControllerUtils.createErrorResponse(field + " field is required"));
+                        return null;
+                    }
+                }
 
-                String ip = ControllerUtils.validateJsonField(ctx, jsonObject, "ip", "Server IP");
-                if (ip == null) return null;
+                String name = jsonObject.get("name").getAsString().trim();
+                String ip = jsonObject.get("ip").getAsString().trim();
 
                 if (!jsonObject.has("port")) {
                     ctx.status(400).json(ControllerUtils.createErrorResponse("Port field is required"));
@@ -204,5 +227,33 @@ public class ServerManagementController {
         });
 
         ctx.future(() -> future);
+    }
+    
+    
+    private boolean isRateLimited(String clientId) {
+        Instant lastOperation = lastOperationTime.get(clientId);
+        Instant now = Instant.now();
+        
+        if (lastOperation != null) {
+            long timeSinceLastOperation = now.toEpochMilli() - lastOperation.toEpochMilli();
+            if (timeSinceLastOperation < MIN_OPERATION_INTERVAL_MS) {
+                return true;
+            }
+        }
+        
+        lastOperationTime.put(clientId, now);
+        return false;
+    }
+    
+    
+    public void cleanupRateLimitCache() {
+        Instant cutoff = Instant.now().minusSeconds(300); 
+        lastOperationTime.entrySet().removeIf(entry -> entry.getValue().isBefore(cutoff));
+    }
+    
+    public void shutdown() {
+        if (operationExecutor != null && !operationExecutor.isShutdown()) {
+            operationExecutor.shutdown();
+        }
     }
 }

@@ -8,11 +8,35 @@ import io.javalin.http.Context;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.time.Instant;
+import java.time.Duration;
 
 public class QueueController {
 
     private final QueueListService queueListService;
     private final Logger logger;
+    
+    
+    private final Map<String, CachedQueueData> queueCache = new ConcurrentHashMap<>();
+    private static final Duration CACHE_TTL = Duration.ofSeconds(2); 
+    
+    private static class CachedQueueData {
+        final List<String> data;
+        final Instant timestamp;
+        final String type;
+        
+        CachedQueueData(List<String> data, String type) {
+            this.data = new ArrayList<>(data); 
+            this.type = type;
+            this.timestamp = Instant.now();
+        }
+        
+        boolean isExpired() {
+            return Duration.between(timestamp, Instant.now()).compareTo(CACHE_TTL) > 0;
+        }
+    }
 
     public QueueController(QueueListService queueListService, Logger logger) {
         this.queueListService = queueListService;
@@ -26,52 +50,86 @@ public class QueueController {
     }
 
     private void getQueueList(Context ctx) {
-        try {
-            String type = ctx.queryParam("type");
-            
-            if (type == null || type.trim().isEmpty()) {
-                type = "username";
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                String type = ctx.queryParam("type");
+                
+                if (type == null || type.trim().isEmpty()) {
+                    type = "username";
+                }
+                
+                
+                CachedQueueData cached = queueCache.get(type);
+                if (cached != null && !cached.isExpired()) {
+                    logger.debug("Serving queue list from cache for type: {}", type);
+                    return createQueueResponse(cached.data, cached.type);
+                }
+
+                List<String> queueData;
+                String listType;
+
+                switch (type.toLowerCase()) {
+                    case "uuid":
+                        queueData = queueListService.getQueuedPlayerUUIDs();
+                        listType = "uuid";
+                        break;
+                    case "username":
+                    default:
+                        queueData = queueListService.getQueuedPlayerNames();
+                        listType = "username";
+                        break;
+                }
+                
+                
+                queueCache.put(listType, new CachedQueueData(queueData, listType));
+                
+                return createQueueResponse(queueData, listType);
+
+            } catch (Exception e) {
+                logger.error("Error getting queue list", e);
+                return ControllerUtils.createErrorResponse("Failed to retrieve queue list");
             }
-
-            List<String> queueData;
-            String listType;
-
-            switch (type.toLowerCase()) {
-                case "uuid":
-                    queueData = queueListService.getQueuedPlayerUUIDs();
-                    listType = "uuid";
-                    break;
-                case "username":
-                default:
-                    queueData = queueListService.getQueuedPlayerNames();
-                    listType = "username";
-                    break;
-            }
-
-            Map<String, Object> response = ControllerUtils.createSuccessResponse("Queue list retrieved successfully");
-            response.put("type", listType);
-            response.put("data", queueData);
-            response.put("count", queueData.size());
-
+        }).thenAccept(response -> {
             ctx.status(200).json(response);
-        } catch (Exception e) {
-            logger.error("Error getting queue list with type: " + ctx.queryParam("type"), e);
-            ctx.status(500).json(ControllerUtils.createErrorResponse("Error retrieving queue list"));
-        }
+        }).exceptionally(throwable -> {
+            logger.error("Unexpected error in queue list handler", throwable);
+            ctx.status(500).json(ControllerUtils.createErrorResponse("Internal server error"));
+            return null;
+        });
+    }
+    
+    private Map<String, Object> createQueueResponse(List<String> queueData, String listType) {
+        Map<String, Object> response = ControllerUtils.createSuccessResponse("Queue list retrieved successfully");
+        response.put("queueList", queueData);
+        response.put("queueCount", queueData.size());
+        response.put("listType", listType);
+        return response;
     }
 
     private void getQueueCount(Context ctx) {
-        try {
-            int queueCount = queueListService.getQueueCount();
-
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                
+                CachedQueueData usernameCache = queueCache.get("username");
+                if (usernameCache != null && !usernameCache.isExpired()) {
+                    logger.debug("Serving queue count from cache");
+                    return usernameCache.data.size();
+                }
+                
+                return queueListService.getQueueCount();
+            } catch (Exception e) {
+                logger.error("Error getting queue count", e);
+                throw new RuntimeException("Failed to get queue count", e);
+            }
+        }).thenAccept(queueCount -> {
             Map<String, Object> response = ControllerUtils.createSuccessResponse("Queue count retrieved successfully");
             response.put("count", queueCount);
-
             ctx.status(200).json(response);
-        } catch (Exception e) {
-            logger.error("Error getting queue count", e);
+        }).exceptionally(throwable -> {
+            logger.error("Unexpected error in queue count handler", throwable);
             ctx.status(500).json(ControllerUtils.createErrorResponse("Error retrieving queue count"));
-        }
+            return null;
+        });
     }
 
     private void removePlayer(Context ctx) {
@@ -139,5 +197,15 @@ public class QueueController {
         response.put(type.equals("usernames") ? "player" : "uuid", identifier);
 
         return response;
+    }
+    
+    
+    public void invalidateCache() {
+        queueCache.clear();
+    }
+    
+    
+    public void cleanupCache() {
+        queueCache.entrySet().removeIf(entry -> entry.getValue().isExpired());
     }
 }
