@@ -59,6 +59,7 @@ public class Java_plugin {
         transferService.setLogsService(logsService);
         queueListService.setLogsService(logsService);
         serverListService.setLogsService(logsService);
+        serverListService.setServerManagementService(serverManagementService);
         broadcastService.setLogsService(logsService);
         metricsService.setLogsService(logsService);
         serverManagementService.setLogsService(logsService);

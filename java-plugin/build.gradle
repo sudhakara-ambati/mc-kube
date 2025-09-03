@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'eclipse'
     id "org.jetbrains.gradle.plugin.idea-ext" version "1.0.1"
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'com.mckube'
@@ -14,27 +13,24 @@ repositories {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
     }
+    maven {
+        name = 'velocity'
+        url = 'https://nexus.velocitypowered.com/repository/maven-public/'
+    }
 }
 
 dependencies {
+    compileOnly "com.velocitypowered:velocity-api:3.4.0-SNAPSHOT"
+    annotationProcessor "com.velocitypowered:velocity-api:3.4.0-SNAPSHOT"
 
-    // Javalin core
     implementation 'io.javalin:javalin:6.1.3'
-
-    // MongoDB driver
-    implementation 'org.mongodb:mongodb-driver-sync:4.4.0'
-
+    implementation 'org.mongodb:mongodb-driver-sync:4.11.1'
     implementation platform("com.fasterxml.jackson:jackson-bom:2.12.4")
     implementation "com.fasterxml.jackson.core:jackson-core"
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.core:jackson-annotations"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
-
-    // JSON parsing (pick one)
     implementation 'com.google.code.gson:gson:2.11.0'
-
-compileOnly "com.velocitypowered:velocity-api:3.4.0-SNAPSHOT"
-    annotationProcessor "com.velocitypowered:velocity-api:3.4.0-SNAPSHOT"
 }
 
 def targetJavaVersion = 17
@@ -70,13 +66,39 @@ def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
 
 def serverPluginsDir = project.findProperty('serverDir') ?: 'Y:/velocity serve test/plugins/'
 
-shadowJar {
+task fatJar(type: Jar) {
+    archiveBaseName.set(project.name)
     archiveClassifier.set('')
-    relocate 'io.javalin', 'com.mckube.shaded.javalin'
-    relocate 'io.javalin.http', 'com.mckube.shaded.javalin.http'
-    relocate 'com.google.gson', 'com.mckube.shaded.gson'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    from sourceSets.main.output
+    
+    from {
+        configurations.runtimeClasspath.findAll { 
+            !it.name.contains('velocity-api') 
+        }.collect { 
+            it.isDirectory() ? it : zipTree(it).matching {
+                exclude 'META-INF/*.SF'
+                exclude 'META-INF/*.DSA'
+                exclude 'META-INF/*.RSA'
+                exclude 'META-INF/MANIFEST.MF'
+                exclude 'META-INF/INDEX.LIST'
+                exclude 'META-INF/DEPENDENCIES'
+                exclude 'META-INF/NOTICE*'
+                exclude 'META-INF/LICENSE*'
+                exclude 'META-INF/versions/**'
+                exclude 'module-info.class'
+            }
+        }
+    }
+}
 
-    destinationDirectory = file(serverPluginsDir)
+build {
+    dependsOn fatJar
+}
+
+jar {
+    enabled = false
 }
 
 sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })

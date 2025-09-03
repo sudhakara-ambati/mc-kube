@@ -462,10 +462,6 @@ public class ServerManagementService {
         return servers;
     }
 
-@param serverName
-@param reason
-@return
-
 private int kickAllPlayersFromServer(String serverName, String reason) {
     try {
         var serverOptional = proxyServer.getServer(serverName);
@@ -522,10 +518,6 @@ private int kickAllPlayersFromServer(String serverName, String reason) {
         return 0;
     }
 }
-
-@param player
-@param kickMessage
-@return
 
 private boolean movePlayerToLobby(com.velocitypowered.api.proxy.Player player, Component kickMessage) {
     try {

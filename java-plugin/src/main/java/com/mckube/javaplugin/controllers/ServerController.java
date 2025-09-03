@@ -37,7 +37,10 @@ public class ServerController {
                                 .map(server -> {
                                     Map<String, Object> info = new HashMap<>();
                                     info.put("name", server.getName());
+                                    info.put("host", server.getHost());
+                                    info.put("port", server.getPort());
                                     info.put("status", server.getStatus());
+                                    info.put("enabled", server.isEnabled()); 
                                     info.put("currentPlayers", server.getCurrentPlayers());
                                     info.put("maxPlayers", server.getMaxPlayers());
                                     info.put("loadStatus", server.getLoadStatus());
@@ -206,11 +209,16 @@ public class ServerController {
     }
 
     private Map<String, Object> buildSummary(List<ServerListService.ServerStatus> servers) {
+        long enabledServers = servers.stream()
+                .filter(ServerListService.ServerStatus::isEnabled)
+                .count();
+        
         long onlineServers = servers.stream()
                 .filter(s -> "online".equals(s.getStatus()))
                 .count();
 
         int totalPlayers = servers.stream()
+                .filter(ServerListService.ServerStatus::isEnabled) 
                 .mapToInt(ServerListService.ServerStatus::getCurrentPlayers)
                 .sum();
 
@@ -220,8 +228,10 @@ public class ServerController {
 
         Map<String, Object> summary = new HashMap<>();
         summary.put("totalServers", servers.size());
+        summary.put("enabledServers", enabledServers);
+        summary.put("disabledServers", servers.size() - enabledServers);
         summary.put("onlineServers", onlineServers);
-        summary.put("offlineServers", servers.size() - onlineServers);
+        summary.put("offlineServers", enabledServers - onlineServers); 
         summary.put("healthyServers", healthyServers);
         summary.put("totalPlayers", totalPlayers);
         return summary;
