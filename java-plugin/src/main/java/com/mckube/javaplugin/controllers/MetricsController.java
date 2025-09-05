@@ -48,44 +48,34 @@ public class MetricsController {
 
     private void getMetrics(Context ctx) {
         String serverIp = ctx.pathParam("serverIp");
-
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                if (!ControllerUtils.validatePathParam(ctx, serverIp, "Server IP")) {
-                    return null;
-                }
-                
-                CachedMetricsResponse cached = responseCache.get(serverIp);
-                if (cached != null && !cached.isExpired()) {
-                    logger.debug("Serving metrics from cache for server: {}", serverIp);
-                    return cached.response;
-                }
-
-                var data = metricsService.getMetrics(serverIp);
-                if (data == null) {
-                    ctx.status(404).json(ControllerUtils.createErrorResponse("Metrics not found for server IP: " + serverIp));
-                    return null;
-                }
-
-                Map<String, Object> response = buildMetricsResponse(data);
-                
-                responseCache.put(serverIp, new CachedMetricsResponse(response));
-                
-                return response;
-
-            } catch (Exception e) {
-                logger.error("Error retrieving metrics for server IP: " + serverIp, e);
-                throw new RuntimeException("Failed to retrieve metrics", e);
+        
+        try {
+            if (!ControllerUtils.validatePathParam(ctx, serverIp, "Server IP")) {
+                ctx.status(400).json(ControllerUtils.createErrorResponse("Invalid server IP"));
+                return;
             }
-        }).thenAccept(response -> {
-            if (response != null) {
-                ctx.status(200).json(response);
+            
+            CachedMetricsResponse cached = responseCache.get(serverIp);
+            if (cached != null && !cached.isExpired()) {
+                ctx.status(200).json(cached.response);
+                return;
             }
-        }).exceptionally(throwable -> {
-            logger.error("Unexpected error in metrics retrieval handler for server IP: " + serverIp, throwable);
+
+            var data = metricsService.getMetrics(serverIp);
+            if (data == null) {
+                ctx.status(404).json(ControllerUtils.createErrorResponse("Metrics not found for server IP: " + serverIp));
+                return;
+            }
+
+            Map<String, Object> response = buildMetricsResponse(data);
+            responseCache.put(serverIp, new CachedMetricsResponse(response));
+            
+            ctx.status(200).json(response);
+            
+        } catch (Exception e) {
+            logger.error("Error retrieving metrics for server IP: " + serverIp, e);
             ctx.status(500).json(ControllerUtils.createErrorResponse("Failed to retrieve metrics"));
-            return null;
-        });
+        }
     }
     
     private Map<String, Object> buildMetricsResponse(MetricsData data) {

@@ -7,7 +7,7 @@ import java.net.InetAddress;
 
 public class Spigot_plugin extends JavaPlugin {
     private MetricsController metricsController;
-    private final String velocityApiUrl = "http://26.40.23.207:8080/metrics/";
+    private final String velocityApiUrl = "http://127.0.0.1:8080/metrics/";
 
     @Override
     public void onEnable() {
