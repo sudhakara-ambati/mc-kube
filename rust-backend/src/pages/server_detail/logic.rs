@@ -7,7 +7,6 @@ use gloo_net::http::Request;
 use serde::Deserialize;
 use gloo_console::log;
 use gloo_timers::callback::Interval;
-use crate::pages::servers::logic::{ServerInfo};
 
 #[derive(Properties, PartialEq)]
 pub struct ServerDetailProps {
@@ -16,33 +15,69 @@ pub struct ServerDetailProps {
 
 #[derive(Clone, PartialEq, Deserialize, Default)]
 pub struct ServerMetrics {
-    #[serde(rename = "serverIp", default)]
+    #[serde(rename = "server_ip", default)]
     pub server_ip: String,
-    #[serde(rename = "systemCpuPercent", default)]
+    #[serde(rename = "system_cpu_percent", default)]
     pub system_cpu_percent: f64,
-    #[serde(rename = "processCpuPercent", default)]
+    #[serde(rename = "process_cpu_percent", default)]
     pub process_cpu_percent: f64,
-    #[serde(rename = "memoryUsedGB", default)]
+    #[serde(rename = "memory_used_gb", default)]
     pub memory_used_gb: f64,
-    #[serde(rename = "memoryMaxGB", default)]
+    #[serde(rename = "memory_max_gb", default)]
     pub memory_max_gb: f64,
-    #[serde(rename = "memoryPercent", default)]
+    #[serde(rename = "memory_percent", default)]
     pub memory_percent: f64,
-    #[serde(rename = "sysUsedGB", default)]
-    pub sys_used_gb: f64,
-    #[serde(rename = "sysTotalGB", default)]
-    pub sys_total_gb: f64,
-    #[serde(rename = "sysMemPercent", default)]
-    pub sys_mem_percent: f64,
+    #[serde(rename = "system_memory_used_gb", default)]
+    pub system_memory_used_gb: f64,
+    #[serde(rename = "system_memory_total_gb", default)]
+    pub system_memory_total_gb: f64,
+    #[serde(rename = "system_memory_percent", default)]
+    pub system_memory_percent: f64,
     #[serde(default)]
     pub tps: f64,
-    #[serde(rename = "tpsPercent", default)]
+    #[serde(rename = "tps_percent", default)]
     pub tps_percent: f64,
+    #[serde(default)]
+    pub success: bool,
+    #[serde(default)]
+    pub timestamp: String,
+}
+
+#[derive(Clone, PartialEq, Deserialize, Default)]
+pub struct ServerDetailInfo {
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub host: String,
+    #[serde(default)]
+    pub port: i32,
+    #[serde(default)]
+    pub status: String,
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(rename = "currentPlayers", default)]
+    pub current_players: i32,
+    #[serde(rename = "maxPlayers", default)]
+    pub max_players: i32,
+    #[serde(default)]
+    pub latency: i32,
+    #[serde(default)]
+    pub version: String,
+    #[serde(default)]
+    pub motd: String,
+    #[serde(rename = "loadPercentage", default)]
+    pub load_percentage: f64,
+    #[serde(rename = "loadStatus", default)]
+    pub load_status: String,
+    #[serde(rename = "isHealthy", default)]
+    pub is_healthy: bool,
+    #[serde(rename = "serverTimestamp", default)]
+    pub server_timestamp: String,
 }
 
 #[function_component(ServerDetail)]
 pub fn server_detail(props: &ServerDetailProps) -> Html {
-    let server_info = use_state(ServerInfo::default);
+    let server_info = use_state(ServerDetailInfo::default);
     let metrics = use_state(ServerMetrics::default);
     let logs = use_state(|| String::from("[14:23:45] [INFO] Player Steve joined the game\n[14:24:12] [INFO] Player Alex left the game\n[14:24:58] [WARN] Can't keep up! Running 2043ms behind\n[14:25:33] [INFO] Saving chunks for level 'ServerLevel[world]'\n[14:26:15] [INFO] Player Bob joined the game"));
     let players = use_state(|| String::from("Online Players (8/20):\n• Steve - 45 mins\n• Alex - 1h 23 mins\n• Bob - 12 mins\n• Charlie - 2h 15 mins\n• Diana - 38 mins\n• Eve - 1h 7 mins\n• Frank - 26 mins\n• Grace - 3h 2 mins"));
@@ -57,13 +92,19 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
             let server_info = server_info.clone();
             let server_id = server_id.clone();
             spawn_local(async move {
-                let request_url = format!("/api/servers/{}", server_id);
+                let request_url = format!("http://localhost:8080/server/{}", server_id);
+                log!("Fetching server info from:", request_url.clone());
+                
                 match Request::get(&request_url).send().await {
-                    Ok(resp) => match resp.json::<ServerInfo>().await {
-                        Ok(data) => {
-                            server_info.set(data);
+                    Ok(resp) => {
+                        log!("Server info response status:", resp.status().to_string());
+                        match resp.json::<ServerDetailInfo>().await {
+                            Ok(data) => {
+                                log!("Successfully parsed server info for:", data.name.clone());
+                                server_info.set(data);
+                            }
+                            Err(e) => log!("Failed to parse server info:", e.to_string()),
                         }
-                        Err(e) => log!("Failed to parse server info:", e.to_string()),
                     },
                     Err(e) => log!("Failed to fetch server info:", e.to_string()),
                 }
@@ -75,19 +116,29 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
     {
         let metrics = metrics.clone();
         use_effect_with(server_info.clone(), move |server_info| {
-            let server_ip = server_info.serverip.clone();
+            let server_ip = server_info.host.clone();
             let is_ip_loaded = !server_ip.is_empty();
+
+            log!("Setting up metrics fetching for server IP:", server_ip.clone());
 
             let interval = if is_ip_loaded {
                 let fetch_metrics = move || {
                     let metrics = metrics.clone();
                     let server_ip = server_ip.clone();
                     spawn_local(async move {
-                        let request_url = format!("/api/servers/{}/metrics", server_ip);
+                        let request_url = format!("http://localhost:8080/metrics/{}", server_ip);
+                        log!("Fetching metrics from:", request_url.clone());
+                        
                         match Request::get(&request_url).send().await {
-                            Ok(resp) => match resp.json::<ServerMetrics>().await {
-                                Ok(data) => metrics.set(data),
-                                Err(e) => log!("Failed to parse metrics JSON:", e.to_string()),
+                            Ok(resp) => {
+                                log!("Metrics response status:", resp.status().to_string());
+                                match resp.json::<ServerMetrics>().await {
+                                    Ok(data) => {
+                                        log!("Successfully parsed metrics data");
+                                        metrics.set(data);
+                                    },
+                                    Err(e) => log!("Failed to parse metrics JSON:", e.to_string()),
+                                }
                             },
                             Err(e) => log!("Failed to fetch metrics:", e.to_string()),
                         }
@@ -95,8 +146,9 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
                 };
 
                 fetch_metrics();
-                Some(Interval::new(5000, fetch_metrics)) // made 5s for performance
+                Some(Interval::new(2000, fetch_metrics))
             } else {
+                log!("Server IP not loaded yet, skipping metrics fetch");
                 None
             };
 
@@ -223,10 +275,55 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
             </div>
 
             <div class="detail-grid">
+                <div class="card server-info-card">
+                    <div class="card-header">
+                        <h2>{ "Server Information" }</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="label">{ "Name:" }</span>
+                                <span class="value">{ &server_info.name }</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">{ "Host:" }</span>
+                                <span class="value">{ &server_info.host }</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">{ "Port:" }</span>
+                                <span class="value">{ server_info.port }</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">{ "Status:" }</span>
+                                <span class={format!("value status-{}", server_info.status.to_lowercase())}>{ &server_info.status }</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">{ "Enabled:" }</span>
+                                <span class="value">{ if server_info.enabled { "Yes" } else { "No" } }</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">{ "Players:" }</span>
+                                <span class="value">{ format!("{}/{}", server_info.current_players, server_info.max_players) }</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">{ "Version:" }</span>
+                                <span class="value">{ &server_info.version }</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">{ "Latency:" }</span>
+                                <span class="value">{ format!("{}ms", server_info.latency) }</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card metrics-card">
                     <div class="card-header">
                         <h2>{ "Live Metrics" }</h2>
-                        <p class="card-subtitle">{ format!("IP: {}", metrics.server_ip.clone()) }</p>
+                        <p class="card-subtitle">{ format!("IP: {} | Last Updated: {}", 
+                            if metrics.server_ip.is_empty() { "Loading..." } else { &metrics.server_ip },
+                            if metrics.timestamp.is_empty() { "Never" } else { &metrics.timestamp[11..19] }
+                        ) }</p>
                     </div>
                     <div class="card-body">
                         <div class="metric-item">
@@ -260,8 +357,8 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
                         <div class="metric-item">
                             <span class="metric-label">{ "System RAM" }</span>
                             <div class="metric-value-bar">
-                                <div class="bar" style={format!("width: {}%", metrics.sys_mem_percent)}></div>
-                                <span>{ format!("{:.2} / {:.2} GB", metrics.sys_used_gb, metrics.sys_total_gb) }</span>
+                                <div class="bar" style={format!("width: {}%", metrics.system_memory_percent)}></div>
+                                <span>{ format!("{:.2} / {:.2} GB", metrics.system_memory_used_gb, metrics.system_memory_total_gb) }</span>
                             </div>
                         </div>
                     </div>
@@ -292,7 +389,8 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
                     </div>
                 </div>
             </div>
-                        {if *show_delete_modal {
+
+            {if *show_delete_modal {
                 html! {
                     <div class="modal-overlay" onclick={close_delete_modal.clone()}>
                         <div class="modal-content delete-modal" onclick={Callback::from(|e: MouseEvent| e.stop_propagation())}>
