@@ -2,6 +2,7 @@ package com.mckube.javaplugin.controllers;
 
 import com.mckube.javaplugin.services.MetricsService;
 import com.mckube.javaplugin.services.MetricsData;
+import com.mckube.javaplugin.services.ServerManagementService;
 import com.mckube.javaplugin.utils.ControllerUtils;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -17,6 +18,7 @@ import java.time.Duration;
 public class MetricsController {
 
     private final MetricsService metricsService;
+    private final ServerManagementService serverManagementService;
     private final Logger logger;
     
     private final Map<String, CachedMetricsResponse> responseCache = new ConcurrentHashMap<>();
@@ -36,8 +38,9 @@ public class MetricsController {
         }
     }
 
-    public MetricsController(MetricsService metricsService, Logger logger) {
+    public MetricsController(MetricsService metricsService, ServerManagementService serverManagementService, Logger logger) {
         this.metricsService = metricsService;
+        this.serverManagementService = serverManagementService;
         this.logger = logger;
     }
 
@@ -61,7 +64,10 @@ public class MetricsController {
                 return;
             }
 
-            var data = metricsService.getMetrics(serverIp);
+            // Resolve server name from IP for logging
+            String serverName = serverManagementService.getServerNameByIp(serverIp);
+            
+            var data = metricsService.getMetrics(serverIp, serverName);
             if (data == null) {
                 ctx.status(404).json(ControllerUtils.createErrorResponse("Metrics not found for server IP: " + serverIp));
                 return;
@@ -111,10 +117,16 @@ public class MetricsController {
                     return null;
                 }
 
-                metricsService.putMetrics(serverIp, body);
+                // Resolve server name from IP
+                String serverName = serverManagementService.getServerNameByIp(serverIp);
+                
+                metricsService.putMetrics(serverIp, body, serverName);
 
                 Map<String, Object> response = ControllerUtils.createSuccessResponse("Metrics updated successfully for server: " + serverIp);
                 response.put("server_ip", serverIp);
+                if (serverName != null) {
+                    response.put("server_name", serverName);
+                }
 
                 ctx.status(200).json(response);
                 return null;

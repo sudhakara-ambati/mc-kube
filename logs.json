@@ -1,0 +1,233 @@
+{
+  "success": true,
+  "count": 11,
+  "limit": 50,
+  "message": "Cluster logs retrieved successfully",
+  "events": [
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 76.29,
+        "memory_used_gb": 0.58,
+        "process_cpu_percent": 0.99,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 24.36,
+        "system_cpu_percent": 43.4,
+        "memory_percent": 29.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:50.154453900Z"
+      },
+      "id": "7e1a4a2b-aab1-47fe-8011-4cfd2a5ab4c7",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:50.158453Z"
+    },
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 78.14,
+        "memory_used_gb": 0.58,
+        "process_cpu_percent": 1.05,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 24.95,
+        "system_cpu_percent": 35.07,
+        "memory_percent": 29.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:48.154629700Z"
+      },
+      "id": "370e4d24-adfe-4b3c-ab9d-a7dd796cf734",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:48.157629900Z"
+    },
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 77.95,
+        "memory_used_gb": 0.58,
+        "process_cpu_percent": 1.11,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 24.89,
+        "system_cpu_percent": 31.35,
+        "memory_percent": 29.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:46.124424900Z"
+      },
+      "id": "63396ff7-e44f-4e04-8e1f-645686a1b718",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:46.128424800Z"
+    },
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 77.95,
+        "memory_used_gb": 0.58,
+        "process_cpu_percent": 0.88,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 24.89,
+        "system_cpu_percent": 35.75,
+        "memory_percent": 29.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:44.140554400Z"
+      },
+      "id": "f17879ab-fde3-476b-a118-2b736b3b34be",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:44.143548100Z"
+    },
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 77.92,
+        "memory_used_gb": 0.58,
+        "process_cpu_percent": 0.98,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 24.88,
+        "system_cpu_percent": 33.53,
+        "memory_percent": 29.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:42.149762300Z"
+      },
+      "id": "37c5f808-2cac-4ba7-9894-b4524940512a",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:42.154284500Z"
+    },
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 79.83,
+        "memory_used_gb": 0.58,
+        "process_cpu_percent": 1.23,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.49,
+        "system_cpu_percent": 55.33,
+        "memory_percent": 29.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:40.190034300Z"
+      },
+      "id": "0b6e5704-bf56-4b98-83dd-407d1c7be288",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:40.196033300Z"
+    },
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 79.46,
+        "memory_used_gb": 0.58,
+        "process_cpu_percent": 1.05,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.37,
+        "system_cpu_percent": 28.43,
+        "memory_percent": 29.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:38.152592300Z"
+      },
+      "id": "c6a59299-70c0-4bbf-ab1c-2d8e4e40c260",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:38.155593500Z"
+    },
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 79.14,
+        "memory_used_gb": 0.58,
+        "process_cpu_percent": 0.87,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.27,
+        "system_cpu_percent": 23.38,
+        "memory_percent": 29.0,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:36.132190700Z"
+      },
+      "id": "961f7df3-92d6-4e91-b1a7-e6bdef67d83a",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:36.136160300Z"
+    },
+    {
+      "server_name": "queue-2",
+      "metadata": {
+        "system_memory_percent": 79.17,
+        "memory_used_gb": 0.57,
+        "process_cpu_percent": 0.88,
+        "tps_percent": 100.0,
+        "memory_max_gb": 2.0,
+        "total_servers_tracked": 1,
+        "system_memory_used_gb": 25.28,
+        "system_cpu_percent": 35.79,
+        "memory_percent": 28.5,
+        "system_memory_total_gb": 31.93,
+        "tps": 20.0,
+        "server_ip": "26.40.23.207",
+        "collection_time": "2025-09-05T23:57:34.150390300Z"
+      },
+      "id": "32b1db1c-2a50-456d-a1de-80c3c58b100c",
+      "type": "metrics_collected",
+      "message": "Metrics collected and stored for server",
+      "timestamp": "2025-09-05T23:57:34.192457300Z"
+    },
+    {
+      "metadata": {
+        "loaded_servers": [
+          "queue (localhost:30002)",
+          "lobby (localhost:30001)",
+          "queue-2 (26.40.23.207:30002)"
+        ],
+        "database": "mc_kube",
+        "startup_time": "2025-09-05T23:57:33.088951Z",
+        "collection": "servers",
+        "servers_loaded": 3
+      },
+      "id": "bc268ff5-f81e-42aa-aec2-bdb7afff6cfb",
+      "type": "system_event",
+      "message": "Servers loaded on startup",
+      "timestamp": "2025-09-05T23:57:33.088951Z"
+    },
+    {
+      "metadata": {
+        "timestamp": "2025-09-05T23:57:33.070446400Z"
+      },
+      "id": "c374a132-9324-4517-be82-e4995b3cd50f",
+      "type": "system_startup",
+      "message": "LogsService initialized and ready",
+      "timestamp": "2025-09-05T23:57:33.071429Z"
+    }
+  ],
+  "timestamp": "2025-09-05T23:57:50.199524800Z"
+}

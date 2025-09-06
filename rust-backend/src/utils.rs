@@ -2,12 +2,20 @@ use yew::prelude::*;
 use gloo_net::http::Request;
 use wasm_bindgen_futures::spawn_local;
 use gloo_console::log;
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub struct ErrorResponse {
+    pub success: bool,
+    pub message: String,
+    pub timestamp: Option<String>,
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ApiError {
     Network(String),
     Parse(String),
-    Request(String),
+    Request { status: u16, message: String, is_structured: bool },
 }
 
 impl std::fmt::Display for ApiError {
@@ -15,7 +23,13 @@ impl std::fmt::Display for ApiError {
         match self {
             ApiError::Network(s) => write!(f, "Network Error: {}", s),
             ApiError::Parse(s) => write!(f, "Parsing Error: {}", s),
-            ApiError::Request(s) => write!(f, "Request Error: {}", s),
+            ApiError::Request { status, message, is_structured } => {
+                if *is_structured {
+                    write!(f, "{}", message)
+                } else {
+                    write!(f, "HTTP Error: {} - {}", status, message)
+                }
+            }
         }
     }
 }
@@ -75,10 +89,28 @@ pub fn api_post(url: &str, body: Option<&str>, callback: Callback<Result<String,
                             match resp.text().await {
                                 Ok(error_text) => {
                                     log!("Error response body:", error_text.clone());
-                                    callback.emit(Err(ApiError::Request(format!("HTTP Error: {} - {}", resp.status(), error_text))));
+                                    
+                                    // Try to parse as structured error response
+                                    if let Ok(error_response) = serde_json::from_str::<ErrorResponse>(&error_text) {
+                                        callback.emit(Err(ApiError::Request { 
+                                            status: resp.status(), 
+                                            message: error_response.message,
+                                            is_structured: true 
+                                        }));
+                                    } else {
+                                        callback.emit(Err(ApiError::Request { 
+                                            status: resp.status(), 
+                                            message: error_text,
+                                            is_structured: false 
+                                        }));
+                                    }
                                 }
                                 Err(_) => {
-                                    callback.emit(Err(ApiError::Request(format!("HTTP Error: {}", resp.status()))));
+                                    callback.emit(Err(ApiError::Request { 
+                                        status: resp.status(), 
+                                        message: "Unknown error".to_string(),
+                                        is_structured: false 
+                                    }));
                                 }
                             }
                         }
@@ -91,7 +123,11 @@ pub fn api_post(url: &str, body: Option<&str>, callback: Callback<Result<String,
             }
             Err(e) => {
                 log!("Request build error:", e.to_string());
-                callback.emit(Err(ApiError::Request(format!("Failed to build request: {}", e))));
+                callback.emit(Err(ApiError::Request { 
+                    status: 0, 
+                    message: format!("Failed to build request: {}", e),
+                    is_structured: false 
+                }));
             }
         }
     });

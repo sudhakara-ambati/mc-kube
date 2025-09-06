@@ -22,6 +22,10 @@ public class MetricsService {
     }
 
     public void putMetrics(String serverIp, MetricsData data) {
+        putMetrics(serverIp, data, null);
+    }
+
+    public void putMetrics(String serverIp, MetricsData data, String serverName) {
         try {
             metricsMap.put(serverIp, data);
             logger.debug("Updated metrics for server: {}", serverIp);
@@ -29,6 +33,9 @@ public class MetricsService {
             if (logsService != null) {
                 Map<String, Object> metadata = new HashMap<>();
                 metadata.put("server_ip", serverIp);
+                if (serverName != null && !serverName.trim().isEmpty()) {
+                    metadata.put("server_name", serverName);
+                }
                 metadata.put("system_cpu_percent", data.systemCpuPercent());
                 metadata.put("process_cpu_percent", data.processCpuPercent());
                 metadata.put("memory_used_gb", data.memoryUsedGB());
@@ -42,7 +49,9 @@ public class MetricsService {
                 metadata.put("collection_time", data.timestamp().toString());
                 metadata.put("total_servers_tracked", metricsMap.size());
 
-                logsService.logMetricsCollected("Metrics collected and stored for server", serverIp, metadata);
+                // Use the resolved server name for the top-level server_name field, fallback to IP if not available
+                String logServerName = (serverName != null && !serverName.trim().isEmpty()) ? serverName : serverIp;
+                logsService.logMetricsCollected("Metrics collected and stored for server", logServerName, metadata);
             }
 
         } catch (Exception e) {
@@ -51,11 +60,16 @@ public class MetricsService {
             if (logsService != null) {
                 Map<String, Object> metadata = new HashMap<>();
                 metadata.put("server_ip", serverIp);
+                if (serverName != null && !serverName.trim().isEmpty()) {
+                    metadata.put("server_name", serverName);
+                }
                 metadata.put("error", e.getMessage());
                 metadata.put("exception_class", e.getClass().getSimpleName());
                 metadata.put("attempted_timestamp", Instant.now().toString());
 
-                logsService.logMetricsFailed("Failed to store metrics for server", serverIp, metadata);
+                // Use the resolved server name for the top-level server_name field, fallback to IP if not available
+                String logServerName = (serverName != null && !serverName.trim().isEmpty()) ? serverName : serverIp;
+                logsService.logMetricsFailed("Failed to store metrics for server", logServerName, metadata);
             }
 
             throw e;
@@ -63,6 +77,10 @@ public class MetricsService {
     }
 
     public MetricsData getMetrics(String serverIp) {
+        return getMetrics(serverIp, null);
+    }
+
+    public MetricsData getMetrics(String serverIp, String serverName) {
         try {
             MetricsData data = metricsMap.get(serverIp);
 
@@ -72,11 +90,16 @@ public class MetricsService {
                 if (logsService != null) {
                     Map<String, Object> metadata = new HashMap<>();
                     metadata.put("server_ip", serverIp);
+                    if (serverName != null && !serverName.trim().isEmpty()) {
+                        metadata.put("server_name", serverName);
+                    }
                     metadata.put("available_servers", metricsMap.keySet());
                     metadata.put("total_servers_tracked", metricsMap.size());
                     metadata.put("request_time", Instant.now().toString());
 
-                    logsService.logMetricsFailed("Metrics retrieval failed - server not found", serverIp, metadata);
+                    // Use the resolved server name for the top-level server_name field, fallback to IP if not available
+                    String logServerName = (serverName != null && !serverName.trim().isEmpty()) ? serverName : serverIp;
+                    logsService.logMetricsFailed("Metrics retrieval failed - server not found", logServerName, metadata);
                 }
             } else {
                 logger.debug("Retrieved metrics for server: {}", serverIp);
@@ -84,13 +107,18 @@ public class MetricsService {
                 if (logsService != null) {
                     Map<String, Object> metadata = new HashMap<>();
                     metadata.put("server_ip", serverIp);
+                    if (serverName != null && !serverName.trim().isEmpty()) {
+                        metadata.put("server_name", serverName);
+                    }
                     metadata.put("system_cpu_percent", data.systemCpuPercent());
                     metadata.put("process_cpu_percent", data.processCpuPercent());
                     metadata.put("memory_percent", data.memoryPercent());
                     metadata.put("tps", data.tps());
                     metadata.put("retrieval_time", Instant.now().toString());
 
-                    logsService.logMetricsCollected("Metrics retrieved for server", serverIp, metadata);
+                    // Use the resolved server name for the top-level server_name field, fallback to IP if not available
+                    String logServerName = (serverName != null && !serverName.trim().isEmpty()) ? serverName : serverIp;
+                    logsService.logMetricsCollected("Metrics retrieved for server", logServerName, metadata);
                 }
             }
 
@@ -102,11 +130,16 @@ public class MetricsService {
             if (logsService != null) {
                 Map<String, Object> metadata = new HashMap<>();
                 metadata.put("server_ip", serverIp);
+                if (serverName != null && !serverName.trim().isEmpty()) {
+                    metadata.put("server_name", serverName);
+                }
                 metadata.put("error", e.getMessage());
                 metadata.put("exception_class", e.getClass().getSimpleName());
                 metadata.put("request_time", Instant.now().toString());
 
-                logsService.logMetricsFailed("Error retrieving metrics for server", serverIp, metadata);
+                // Use the resolved server name for the top-level server_name field, fallback to IP if not available
+                String logServerName = (serverName != null && !serverName.trim().isEmpty()) ? serverName : serverIp;
+                logsService.logMetricsFailed("Error retrieving metrics for server", logServerName, metadata);
             }
 
             throw e;

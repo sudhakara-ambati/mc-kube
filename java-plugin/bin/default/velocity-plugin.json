@@ -1,1 +1,1 @@
-{"id":"mc-kube","name":"mc-kube","authors":[],"dependencies":[],"main":"com.mckube.javaplugin.Java_plugin"}
+{"id":"mc-kube","name":"mc-kube","version":"1.0-SNAPSHOT","authors":[],"dependencies":[],"main":"com.mckube.javaplugin.Java_plugin"}

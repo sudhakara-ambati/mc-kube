@@ -1,5 +1,5 @@
 use gloo_console::log;
-use gloo_timers::callback::Interval;
+use gloo_timers::callback::{Timeout, Interval};
 use yew::prelude::*;
 use yew_router::prelude::*;
 use serde::Deserialize;
@@ -44,9 +44,56 @@ pub struct ServerInfo {
     pub is_healthy: bool,
 }
 
+// Helper function to validate IP address or hostname
+fn is_valid_ip_or_hostname(input: &str) -> bool {
+    if input.is_empty() {
+        return false;
+    }
+    
+    // Check if it's a valid IPv4 address
+    if is_valid_ipv4(input) {
+        return true;
+    }
+    
+    // Check if it's a valid hostname (basic validation)
+    is_valid_hostname(input)
+}
+
+fn is_valid_ipv4(ip: &str) -> bool {
+    let parts: Vec<&str> = ip.split('.').collect();
+    if parts.len() != 4 {
+        return false;
+    }
+    
+    for part in parts {
+        if let Ok(_num) = part.parse::<u8>() {
+            // Valid u8 range (0-255)
+            continue;
+        } else {
+            return false;
+        }
+    }
+    true
+}
+
+fn is_valid_hostname(hostname: &str) -> bool {
+    // Basic hostname validation
+    if hostname.len() > 253 || hostname.is_empty() {
+        return false;
+    }
+    
+    // Check for valid characters and structure
+    hostname.chars().all(|c| c.is_alphanumeric() || c == '.' || c == '-') &&
+    !hostname.starts_with('.') &&
+    !hostname.ends_with('.') &&
+    !hostname.starts_with('-') &&
+    !hostname.ends_with('-')
+}
+
 #[function_component(Servers)]
 pub fn servers() -> Html {
     let response = use_state(|| String::new());
+    let response_type = use_state(|| "info".to_string());
     let show_add_modal = use_state(|| false);
     let new_server_id = use_state(|| String::new());
     let new_server_name = use_state(|| String::new());
@@ -58,7 +105,6 @@ pub fn servers() -> Html {
     let action_loading = use_state(|| None::<String>);
     let last_updated = use_state(|| None::<String>);
 
-    // seperate fetch to avoid re triggering loading state
     let fetch_servers_background = {
         let servers = servers.clone();
         let last_updated = last_updated.clone();
@@ -136,6 +182,24 @@ pub fn servers() -> Html {
         });
     }
 
+    // Auto-clear response toast after 5 seconds
+    {
+        let response = response.clone();
+        let response_type = response_type.clone();
+        use_effect_with((response.clone(), response_type.clone()), move |(response_state, _response_type_state)| {
+            if !response_state.is_empty() {
+                let response_clear = response.clone();
+                let response_type_clear = response_type.clone();
+                let timeout = Timeout::new(5000, move || {
+                    response_clear.set(String::new());
+                    response_type_clear.set("info".to_string());
+                });
+                timeout.forget();
+            }
+            || ()
+        });
+    }
+
     fn format_timestamp(ts: &str) -> String {
         match DateTime::parse_from_rfc3339(ts) {
             Ok(dt) => dt.with_timezone(&Utc).format("%Y-%m-%d %H:%M:%S UTC").to_string(),
@@ -155,6 +219,7 @@ pub fn servers() -> Html {
 
     let create_enable_handler = {
         let response = response.clone();
+        let response_type = response_type.clone();
         let fetch_servers = fetch_servers.clone();
         let action_loading = action_loading.clone();
         Callback::from(move |server_id: String| {
@@ -163,16 +228,26 @@ pub fn servers() -> Html {
             
             api_post("http://127.0.0.1:8080/server/enable", Some(&server_data), {
                 let response = response.clone();
+                let response_type = response_type.clone();
                 let fetch_servers = fetch_servers.clone();
                 let action_loading = action_loading.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
                     action_loading.set(None);
                     match result {
-                        Ok(data) => {
-                            response.set(format!("Server enabled: {}", data));
+                        Ok(_) => {
+                            response.set("Server enabled successfully!".to_string());
+                            response_type.set("success".to_string());
                             fetch_servers.emit(());
                         }
-                        Err(e) => response.set(format!("Error enabling server: {}", e)),
+                        Err(e) => {
+                            let (error_message, error_type) = match &e {
+                                ApiError::Request { status, .. } if *status == 404 => 
+                                    ("Server not found. It may have been removed.".to_string(), "warning".to_string()),
+                                _ => ("Failed to enable server. Please try again.".to_string(), "error".to_string()),
+                            };
+                            response.set(error_message);
+                            response_type.set(error_type);
+                        }
                     }
                 })
             });
@@ -181,6 +256,7 @@ pub fn servers() -> Html {
 
     let create_disable_handler = {
         let response = response.clone();
+        let response_type = response_type.clone();
         let fetch_servers = fetch_servers.clone();
         let action_loading = action_loading.clone();
         Callback::from(move |server_id: String| {
@@ -189,16 +265,26 @@ pub fn servers() -> Html {
             
             api_post("http://127.0.0.1:8080/server/disable", Some(&server_data), {
                 let response = response.clone();
+                let response_type = response_type.clone();
                 let fetch_servers = fetch_servers.clone();
                 let action_loading = action_loading.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
                     action_loading.set(None);
                     match result {
-                        Ok(data) => {
-                            response.set(format!("Server disabled: {}", data));
+                        Ok(_) => {
+                            response.set("Server disabled successfully!".to_string());
+                            response_type.set("success".to_string());
                             fetch_servers.emit(());
                         }
-                        Err(e) => response.set(format!("Error disabling server: {}", e)),
+                        Err(e) => {
+                            let (error_message, error_type) = match &e {
+                                ApiError::Request { status, .. } if *status == 404 => 
+                                    ("Server not found. It may have been removed.".to_string(), "warning".to_string()),
+                                _ => ("Failed to disable server. Please try again.".to_string(), "error".to_string()),
+                            };
+                            response.set(error_message);
+                            response_type.set(error_type);
+                        }
                     }
                 })
             });
@@ -236,6 +322,7 @@ pub fn servers() -> Html {
 
     let submit_server = {
         let response = response.clone();
+        let response_type = response_type.clone();
         let show_add_modal = show_add_modal.clone();
         let new_server_id = new_server_id.clone();
         let new_server_name = new_server_name.clone();
@@ -250,30 +337,107 @@ pub fn servers() -> Html {
             log!("IP:", (*new_server_ip).clone());
             log!("Port:", (*new_server_port).clone());
 
-            let port: u16 = new_server_port.parse().unwrap_or(25565);
+            // Validate all fields are filled
+            let server_id = (*new_server_id).trim();
+            let server_name = (*new_server_name).trim();
+            let server_ip = (*new_server_ip).trim();
+            let server_port = (*new_server_port).trim();
+
+            // Check for empty fields
+            if server_id.is_empty() {
+                response.set("Server ID is required. Please enter a server ID.".to_string());
+                response_type.set("warning".to_string());
+                return;
+            }
+
+            if server_name.is_empty() {
+                response.set("Server name is required. Please enter a server name.".to_string());
+                response_type.set("warning".to_string());
+                return;
+            }
+
+            if server_ip.is_empty() {
+                response.set("Server IP address is required. Please enter a valid IP address.".to_string());
+                response_type.set("warning".to_string());
+                return;
+            }
+
+            if server_port.is_empty() {
+                response.set("Server port is required. Please enter a port number.".to_string());
+                response_type.set("warning".to_string());
+                return;
+            }
+
+            // Validate port number
+            let port: u16 = match server_port.parse() {
+                Ok(p) if p > 0 => p,
+                _ => {
+                    response.set("Invalid port number. Please enter a valid port between 1 and 65535.".to_string());
+                    response_type.set("warning".to_string());
+                    return;
+                }
+            };
+
+            // Basic IP validation (simple check for valid format)
+            if !is_valid_ip_or_hostname(server_ip) {
+                response.set("Invalid IP address or hostname format. Please enter a valid IP address or hostname.".to_string());
+                response_type.set("warning".to_string());
+                return;
+            }
+
             let max_players: u32 = 500;
             let server_data = format!(
                 r#"{{"name":"{}","ip":"{}","port":{},"maxPlayers":{}}}"#,
-                *new_server_id, *new_server_ip, port, max_players
+                server_id, server_ip, port, max_players
             );
 
             log!("Formatted payload:", server_data.clone());
 
             api_post("http://127.0.0.1:8080/server/add", Some(&server_data), {
                 let response = response.clone();
+                let response_type = response_type.clone();
                 let fetch_servers = fetch_servers.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
                     log!("API Response received:", format!("{:?}", result));
                     match result {
                         Ok(data) => {
                             log!("Success response:", data.clone());
-                            response.set(format!("Server added successfully: {}", data));
+                            response.set("Server added successfully!".to_string());
+                            response_type.set("success".to_string());
                             fetch_servers.emit(());
                         }
                         Err(e) => {
                             log!("Error response:", format!("{:?}", e));
                             log!("Error string:", e.to_string());
-                            response.set(format!("Error adding server: {}", e));
+                            
+                            // Categorize error types
+                            let (error_message, error_type) = match &e {
+                                ApiError::Request { status, message, is_structured } => {
+                                    match *status {
+                                        409 => {
+                                            if message.contains("already exists") {
+                                                ("A server with this name already exists. Please choose a different name.".to_string(), "warning".to_string())
+                                            } else {
+                                                (message.clone(), "error".to_string())
+                                            }
+                                        }
+                                        400 => ("Invalid server configuration. Please check your inputs.".to_string(), "warning".to_string()),
+                                        500 => ("Server error occurred. Please try again later.".to_string(), "error".to_string()),
+                                        _ => {
+                                            if *is_structured {
+                                                (message.clone(), "error".to_string())
+                                            } else {
+                                                (format!("HTTP Error {}: {}", status, message), "error".to_string())
+                                            }
+                                        }
+                                    }
+                                }
+                                ApiError::Network(_) => ("Network connection failed. Please check your connection.".to_string(), "error".to_string()),
+                                ApiError::Parse(_) => ("Failed to process server response.".to_string(), "error".to_string()),
+                            };
+                            
+                            response.set(error_message);
+                            response_type.set(error_type);
                         }
                     }
                 })
@@ -449,11 +613,12 @@ pub fn servers() -> Html {
                             </div>
                             <div class="modal-body">
                                 <div class="form-group">
-                                    <label>{"Server ID"}</label>
+                                    <label>{"Server ID"} <span class="required">{"*"}</span></label>
                                     <input 
                                         type="text" 
                                         placeholder="e.g., survival-2" 
                                         value={(*new_server_id).clone()}
+                                        required=true
                                         oninput={{
                                             let new_server_id = new_server_id.clone();
                                             Callback::from(move |e: InputEvent| {
@@ -462,13 +627,15 @@ pub fn servers() -> Html {
                                             })
                                         }}
                                     />
+                                    <small class="field-hint">{"Unique identifier for this server"}</small>
                                 </div>
                                 <div class="form-group">
-                                    <label>{"Server Name"}</label>
+                                    <label>{"Server Name"} <span class="required">{"*"}</span></label>
                                     <input 
                                         type="text" 
                                         placeholder="e.g., Survival World 2" 
                                         value={(*new_server_name).clone()}
+                                        required=true
                                         oninput={{
                                             let new_server_name = new_server_name.clone();
                                             Callback::from(move |e: InputEvent| {
@@ -477,13 +644,15 @@ pub fn servers() -> Html {
                                             })
                                         }}
                                     />
+                                    <small class="field-hint">{"Display name for this server"}</small>
                                 </div>
                                 <div class="form-group">
-                                    <label>{"Server IP"}</label>
+                                    <label>{"Server IP"} <span class="required">{"*"}</span></label>
                                     <input 
                                         type="text" 
-                                        placeholder="e.g., 192.168.1.104" 
+                                        placeholder="e.g., 192.168.1.104 or minecraft.example.com" 
                                         value={(*new_server_ip).clone()}
+                                        required=true
                                         oninput={{
                                             let new_server_ip = new_server_ip.clone();
                                             Callback::from(move |e: InputEvent| {
@@ -492,13 +661,17 @@ pub fn servers() -> Html {
                                             })
                                         }}
                                     />
+                                    <small class="field-hint">{"IP address or hostname of the server"}</small>
                                 </div>
                                 <div class="form-group">
-                                    <label>{"Port"}</label>
+                                    <label>{"Port"} <span class="required">{"*"}</span></label>
                                     <input 
-                                        type="text" 
+                                        type="number" 
                                         placeholder="e.g., 25565" 
                                         value={(*new_server_port).clone()}
+                                        required=true
+                                        min="1"
+                                        max="65535"
                                         oninput={{
                                             let new_server_port = new_server_port.clone();
                                             Callback::from(move |e: InputEvent| {
@@ -507,6 +680,7 @@ pub fn servers() -> Html {
                                             })
                                         }}
                                     />
+                                    <small class="field-hint">{"Port number (1-65535)"}</small>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -521,10 +695,18 @@ pub fn servers() -> Html {
             }}
             
             {if !response.is_empty() {
+                let toast_class = format!("toast-content {}", (*response_type).clone());
+                let toast_title = match (*response_type).as_str() {
+                    "success" => "Success",
+                    "error" => "Error", 
+                    "warning" => "Warning",
+                    _ => "Server Action"
+                };
+                
                 html! {
                     <div class="response-toast">
-                        <div class="toast-content">
-                            <h4>{"Server Action"}</h4>
+                        <div class={toast_class}>
+                            <h4>{toast_title}</h4>
                             <p>{(*response).clone()}</p>
                         </div>
                     </div>

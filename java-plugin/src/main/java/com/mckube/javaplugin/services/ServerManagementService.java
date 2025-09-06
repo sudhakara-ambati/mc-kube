@@ -467,6 +467,27 @@ public class ServerManagementService {
         return servers;
     }
 
+    public String getServerNameByIp(String serverIp) {
+        try {
+            Document server = serverCollection.find(Filters.eq("ip", serverIp)).first();
+            if (server != null) {
+                return server.getString("name");
+            }
+            logger.debug("No server found with IP: {}", serverIp);
+            return null;
+        } catch (Exception e) {
+            logger.error("Error retrieving server name for IP: {}", serverIp, e);
+            if (logsService != null) {
+                Map<String, Object> errorMetadata = new HashMap<>();
+                errorMetadata.put("server_ip", serverIp);
+                errorMetadata.put("error", e.getMessage());
+                errorMetadata.put("operation", "getServerNameByIp");
+                logsService.logError("Failed to retrieve server name by IP", "ServerManagementService.getServerNameByIp", e);
+            }
+            return null;
+        }
+    }
+
 private int kickAllPlayersFromServer(String serverName, String reason) {
     try {
         var serverOptional = proxyServer.getServer(serverName);

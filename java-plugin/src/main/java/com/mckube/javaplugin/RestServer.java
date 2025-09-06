@@ -36,7 +36,7 @@ public class RestServer {
         this.serverController = new ServerController(serverListService, logger);
         this.queueController = new QueueController(queueListService, logger);
         this.broadcastController = new BroadcastController(broadcastService, logger);
-        this.metricsController = new MetricsController(metricsService, logger);
+                this.metricsController = new MetricsController(metricsService, serverManagementService, logger);
         this.serverManagementController = new ServerManagementController(serverManagementService, logger);
         this.logsController = new LogsController(logsService, logger);
         this.healthController = new HealthController();

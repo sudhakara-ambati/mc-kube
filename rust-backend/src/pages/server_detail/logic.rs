@@ -1,4 +1,4 @@
-use yew::{function_component, html, Html, use_state, use_effect_with, Callback, MouseEvent, Properties};
+use yew::{function_component, html, Html, use_state, use_effect_with, Callback, MouseEvent, Properties, NodeRef};
 use yew_router::prelude::*;
 use crate::utils::{api_post, ApiError};
 use crate::Route;
@@ -6,7 +6,11 @@ use wasm_bindgen_futures::spawn_local;
 use gloo_net::http::Request;
 use serde::Deserialize;
 use gloo_console::log;
-use gloo_timers::callback::Interval;
+use gloo_timers::callback::{Interval, Timeout};
+use std::collections::VecDeque;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
+use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d};
 
 #[derive(Properties, PartialEq)]
 pub struct ServerDetailProps {
@@ -75,13 +79,161 @@ pub struct ServerDetailInfo {
     pub server_timestamp: String,
 }
 
+#[derive(Clone, PartialEq, Default)]
+pub struct MetricsHistory {
+    pub cpu_data: VecDeque<f64>,
+    pub memory_data: VecDeque<f64>,
+    pub tps_data: VecDeque<f64>,
+    pub timestamps: VecDeque<String>,
+}
+
+impl MetricsHistory {
+    fn new() -> Self {
+        Self {
+            cpu_data: VecDeque::new(),
+            memory_data: VecDeque::new(),
+            tps_data: VecDeque::new(),
+            timestamps: VecDeque::new(),
+        }
+    }
+
+    fn add_data(&mut self, metrics: &ServerMetrics) {
+        const MAX_POINTS: usize = 150;
+
+        self.cpu_data.push_back(metrics.process_cpu_percent);
+        self.memory_data.push_back(metrics.memory_percent);
+        self.tps_data.push_back(metrics.tps);
+        self.timestamps.push_back(metrics.timestamp.clone());
+
+        while self.cpu_data.len() > MAX_POINTS {
+            self.cpu_data.pop_front();
+            self.memory_data.pop_front();
+            self.tps_data.pop_front();
+            self.timestamps.pop_front();
+        }
+    }
+}
+
+fn draw_graph(canvas: &HtmlCanvasElement, data: &VecDeque<f64>, max_value: f64, color: &str, _fill_color: &str) {
+    let ctx = canvas
+        .get_context("2d").unwrap().unwrap()
+        .dyn_into::<CanvasRenderingContext2d>().unwrap();
+
+    let width = canvas.width() as f64;
+    let height = canvas.height() as f64;
+
+    let pad_l = 36.0;
+    let pad_r = 8.0;
+    let pad_t = 8.0;
+    let pad_b = 18.0;
+
+    let gw = (width - pad_l - pad_r).max(10.0);
+    let gh = (height - pad_t - pad_b).max(10.0);
+    let x0 = pad_l;
+    let y0 = pad_t;
+
+    ctx.clear_rect(0.0, 0.0, width, height);
+    ctx.set_fill_style_str("#111827");
+    ctx.fill_rect(0.0, 0.0, width, height);
+
+    ctx.set_stroke_style_str("#374151");
+    ctx.set_line_width(1.0);
+
+    ctx.set_fill_style_str("#9ca3af");
+    ctx.set_font("10px monospace");
+    ctx.set_text_align("right");
+    let ticks = 4;
+    for i in 0..=ticks {
+        let value = (i as f64) * (max_value / ticks as f64);
+        let y = y0 + gh - (value / max_value) * gh;
+
+        ctx.begin_path();
+        ctx.move_to(x0, y);
+        ctx.line_to(x0 + gw, y);
+        ctx.stroke();
+
+        let label = if (max_value - 100.0).abs() < 1e-6 {
+            format!("{:.0}%", value)
+        } else {
+            format!("{:.0}", value)
+        };
+        let _ = ctx.fill_text(&label, x0 - 6.0, y + 3.0);
+    }
+    for i in 0..=10 {
+        let x = x0 + gw * (i as f64 / 10.0);
+        ctx.begin_path();
+        ctx.move_to(x, y0);
+        ctx.line_to(x, y0 + gh);
+        ctx.stroke();
+    }
+
+    if data.is_empty() {
+        ctx.set_fill_style_str("#6b7280");
+        ctx.set_text_align("center");
+        ctx.set_font("12px Arial");
+        let _ = ctx.fill_text("Waiting for data...", x0 + gw / 2.0, y0 + gh / 2.0);
+        return;
+    }
+
+    let point_spacing = 4.0;
+    let max_points = (gw / point_spacing).floor().max(1.0) as usize;
+
+    let visible = data.len().min(max_points);
+    let start = data.len() - visible;
+
+    let mut pts: Vec<(f64, f64)> = Vec::with_capacity(visible);
+    for i in 0..visible {
+        let idx = start + i;
+        let v = data[idx].clamp(0.0, max_value);
+        let x = x0 + gw - ((visible - 1 - i) as f64 * point_spacing);
+        let y = y0 + gh - (v / max_value) * gh;
+        pts.push((x, y));
+    }
+
+    if pts.len() >= 2 {
+        ctx.set_stroke_style_str(color);
+        ctx.set_line_width(2.0);
+        ctx.set_line_cap("round");
+
+        for w in pts.windows(2) {
+            let (x1, y1) = w[0];
+            let (x2, y2) = w[1];
+            ctx.begin_path();
+            ctx.move_to(x1, y1);
+            ctx.line_to(x2, y2);
+            ctx.stroke();
+        }
+    } else {
+        let (x, y) = pts[0];
+        ctx.set_stroke_style_str(color);
+        ctx.set_line_width(2.0);
+        ctx.begin_path();
+        ctx.move_to(x - 1.0, y);
+        ctx.line_to(x, y);
+        ctx.stroke();
+    }
+
+    let (last_x, last_y) = *pts.last().unwrap();
+    ctx.set_fill_style_str(color);
+    ctx.begin_path();
+    let _ = ctx.arc(last_x, last_y, 2.5, 0.0, std::f64::consts::PI * 2.0);
+    ctx.fill();
+}
+
+
 #[function_component(ServerDetail)]
 pub fn server_detail(props: &ServerDetailProps) -> Html {
     let server_info = use_state(ServerDetailInfo::default);
     let metrics = use_state(ServerMetrics::default);
+    let metrics_history = use_state(MetricsHistory::new);
     let response = use_state(|| String::new());
+    let response_type = use_state(|| "info".to_string());
     let show_delete_modal = use_state(|| false);
     let navigator = use_navigator().unwrap();
+
+    let cpu_canvas_ref = NodeRef::default();
+    let memory_canvas_ref = NodeRef::default();
+    let tps_canvas_ref = NodeRef::default();
 
     {
         let server_info = server_info.clone();
@@ -113,6 +265,7 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
 
     {
         let metrics = metrics.clone();
+        let metrics_history = metrics_history.clone();
         use_effect_with(server_info.clone(), move |server_info| {
             let server_ip = server_info.host.clone();
             let is_ip_loaded = !server_ip.is_empty();
@@ -122,6 +275,7 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
             let interval = if is_ip_loaded {
                 let fetch_metrics = move || {
                     let metrics = metrics.clone();
+                    let metrics_history = metrics_history.clone();
                     let server_ip = server_ip.clone();
                     spawn_local(async move {
                         let request_url = format!("http://localhost:8080/metrics/{}", server_ip);
@@ -133,6 +287,11 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
                                 match resp.json::<ServerMetrics>().await {
                                     Ok(data) => {
                                         log!("Successfully parsed metrics data");
+                                        
+                                        let mut history = (*metrics_history).clone();
+                                        history.add_data(&data);
+                                        metrics_history.set(history);
+                                        
                                         metrics.set(data);
                                     },
                                     Err(e) => log!("Failed to parse metrics JSON:", e.to_string()),
@@ -156,6 +315,44 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
         });
     }
 
+    {
+        let cpu_canvas_ref = cpu_canvas_ref.clone();
+        let memory_canvas_ref = memory_canvas_ref.clone();
+        let tps_canvas_ref = tps_canvas_ref.clone();
+        let mh_value = (*metrics_history).clone();
+
+        use_effect_with(mh_value, move |history: &MetricsHistory| {
+            if let Some(canvas) = cpu_canvas_ref.cast::<HtmlCanvasElement>() {
+                draw_graph(&canvas, &history.cpu_data, 100.0, "#60a5fa", "");
+            }
+            if let Some(canvas) = memory_canvas_ref.cast::<HtmlCanvasElement>() {
+                draw_graph(&canvas, &history.memory_data, 100.0, "#f093fb", "");
+            }
+            if let Some(canvas) = tps_canvas_ref.cast::<HtmlCanvasElement>() {
+                draw_graph(&canvas, &history.tps_data, 20.0, "#06d6a0", "#06d6a066");
+            }
+            
+            || ()
+        });
+    }
+
+    {
+        let response = response.clone();
+        let response_type = response_type.clone();
+        use_effect_with((response.clone(), response_type.clone()), move |(response_state, _response_type_state)| {
+            if !response_state.is_empty() {
+                let response_clear = response.clone();
+                let response_type_clear = response_type.clone();
+                let timeout = Timeout::new(5000, move || {
+                    response_clear.set(String::new());
+                    response_type_clear.set("info".to_string());
+                });
+                timeout.forget();
+            }
+            || ()
+        });
+    }
+
     let show_delete_confirmation = {
         let show_delete_modal = show_delete_modal.clone();
         Callback::from(move |_: MouseEvent| {
@@ -172,6 +369,7 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
 
     let confirm_delete = {
         let response = response.clone();
+        let response_type = response_type.clone();
         let server_id = props.server_id.clone();
         let show_delete_modal = show_delete_modal.clone();
         let navigator = navigator.clone();
@@ -183,21 +381,36 @@ pub fn server_detail(props: &ServerDetailProps) -> Html {
 
             api_post("http://127.0.0.1:8080/server/remove", Some(&server_data), {
                 let response = response.clone();
+                let response_type = response_type.clone();
                 let show_delete_modal = show_delete_modal.clone();
                 let navigator = navigator.clone();
                 Callback::from(move |result: Result<String, ApiError>| {
                     log!("API Response received:", format!("{:?}", result));
                     match result {
-                        Ok(data) => {
-                            log!("Success response:", data.clone());
-                            response.set(format!("Server deleted successfully: {}", data));
+                        Ok(_) => {
+                            log!("Success response: server deleted");
+                            response.set("Server deleted successfully!".to_string());
+                            response_type.set("success".to_string());
                             show_delete_modal.set(false);
                             navigator.push(&Route::Servers);
                         }
                         Err(e) => {
                             log!("Error response:", format!("{:?}", e));
                             log!("Error string:", e.to_string());
-                            response.set(format!("Error deleting server: {}", e));
+                            
+                            let (error_message, error_type) = match &e {
+                                ApiError::Request { status, .. } => {
+                                    match *status {
+                                        404 => ("Server not found. It may have already been removed.".to_string(), "warning".to_string()),
+                                        403 => ("Permission denied. Unable to delete this server.".to_string(), "error".to_string()),
+                                        _ => ("Failed to delete server. Please try again.".to_string(), "error".to_string()),
+                                    }
+                                }
+                                _ => ("Failed to delete server. Please try again.".to_string(), "error".to_string()),
+                            };
+                            
+                            response.set(error_message);
+                            response_type.set(error_type);
                             show_delete_modal.set(false);
                         }
                     }
@@ -435,6 +648,74 @@ html! {
             </div>
         </div>
 
+        /* Performance Graphs Section */
+        <div class="card performance-graphs-card">
+            <div class="card-header">
+                <h2>{ "Performance Graphs" }</h2>
+                <div class="graph-info">
+                    <span class="graph-timespan">{ "Last 2 minutes" }</span>
+                    <span class="graph-update-rate">{ "Updates every 2s" }</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="graphs-grid">
+                    /* CPU Usage Graph */
+                    <div class="graph-container">
+                        <div class="graph-header">
+                            <h3 class="graph-title">{ "CPU Usage" }</h3>
+                            <div class="graph-current-value cpu-value">
+                                { format!("{:.1}%", metrics.process_cpu_percent) }
+                            </div>
+                        </div>
+                        <div class="graph-chart">
+                            <canvas 
+                                ref={cpu_canvas_ref}
+                                class="performance-graph-canvas"
+                                width="400"
+                                height="160"
+                            ></canvas>
+                        </div>
+                    </div>
+
+                    /* Memory Usage Graph */
+                    <div class="graph-container">
+                        <div class="graph-header">
+                            <h3 class="graph-title">{ "Memory Usage" }</h3>
+                            <div class="graph-current-value memory-value">
+                                { format!("{:.1}%", metrics.memory_percent) }
+                            </div>
+                        </div>
+                        <div class="graph-chart">
+                            <canvas 
+                                ref={memory_canvas_ref}
+                                class="performance-graph-canvas"
+                                width="400"
+                                height="160"
+                            ></canvas>
+                        </div>
+                    </div>
+
+                    /* TPS Graph */
+                    <div class="graph-container">
+                        <div class="graph-header">
+                            <h3 class="graph-title">{ "TPS (Ticks Per Second)" }</h3>
+                            <div class="graph-current-value tps-value">
+                                { format!("{:.1}", metrics.tps) }
+                            </div>
+                        </div>
+                        <div class="graph-chart">
+                            <canvas 
+                                ref={tps_canvas_ref}
+                                class="performance-graph-canvas"
+                                width="400"
+                                height="160"
+                            ></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {if *show_delete_modal {
             html! {
                 <div class="modal-overlay" onclick={close_delete_modal.clone()}>
@@ -470,10 +751,18 @@ html! {
         }}
 
         {if !response.is_empty() {
+            let toast_class = format!("toast-content {}", (*response_type).clone());
+            let toast_title = match (*response_type).as_str() {
+                "success" => "Success",
+                "error" => "Error", 
+                "warning" => "Warning",
+                _ => "Server Action"
+            };
+            
             html! {
                 <div class="response-toast">
-                    <div class="toast-content">
-                        <h4>{"Server Action"}</h4>
+                    <div class={toast_class}>
+                        <h4>{toast_title}</h4>
                         <p>{(*response).clone()}</p>
                     </div>
                 </div>
